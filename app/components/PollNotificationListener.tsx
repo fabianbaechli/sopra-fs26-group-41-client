@@ -47,12 +47,12 @@ export default function PollNotificationListener() {
     notificationRef.current = notification;
   }, [notification]);
 
-  useEffect(() => {
+  const connectSocket = React.useCallback(() => {
     if (typeof window === "undefined") return;
 
-    if (socketRef.current) {
-      socketRef.current.close();
-      socketRef.current = null;
+    const existing = socketRef.current;
+    if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
+      return;
     }
 
     const token = localStorage.getItem("token");
@@ -118,6 +118,7 @@ export default function PollNotificationListener() {
 
           if (!redirectUrl) return;
 
+          const finalUrl = redirectUrl;
           api.info({
             title: "Poll finished",
             description: "The group poll has finished. See what your group picked.",
@@ -128,7 +129,7 @@ export default function PollNotificationListener() {
                 size="small"
                 onClick={() => {
                   api.destroy();
-                  nav.push(redirectUrl!);
+                  nav.push(finalUrl);
                 }}
               >
                 View Results
@@ -170,12 +171,21 @@ export default function PollNotificationListener() {
     socket.onclose = () => {
       socketRef.current = null;
     };
+  }, []);
 
+  // Open socket on mount, close only on unmount
+  useEffect(() => {
+    connectSocket();
     return () => {
-      socket.close();
+      socketRef.current?.close();
       socketRef.current = null;
     };
-  }, [pathname]);
+  }, [connectSocket]);
+
+  // On navigation, reconnect only if socket is gone (handles post-login transition)
+  useEffect(() => {
+    connectSocket();
+  }, [pathname, connectSocket]);
 
   return null;
 }
