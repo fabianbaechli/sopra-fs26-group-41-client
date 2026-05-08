@@ -52,18 +52,31 @@ export default function PollNotificationListener() {
 
     const existing = socketRef.current;
     if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
+      console.log("[PollNotificationListener] socket already open/connecting, skipping");
       return;
     }
 
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      console.log("[PollNotificationListener] no token, skipping connect");
+      return;
+    }
 
-    const socket = new WebSocket(
-      `${getWsDomain()}/ws?token=${encodeURIComponent(token)}`
-    );
+    const wsUrl = `${getWsDomain()}/ws?token=${encodeURIComponent(token)}`;
+    console.log("[PollNotificationListener] connecting to", wsUrl.replace(/token=.*/, "token=***"));
+    const socket = new WebSocket(wsUrl);
     socketRef.current = socket;
 
+    socket.onopen = () => {
+      console.log("[PollNotificationListener] WebSocket connected");
+    };
+
+    socket.onerror = (e) => {
+      console.error("[PollNotificationListener] WebSocket error", e);
+    };
+
     socket.onmessage = (messageEvent) => {
+      console.log("[PollNotificationListener] message received:", messageEvent.data);
       try {
         if (typeof messageEvent.data !== "string") return;
 
@@ -79,7 +92,7 @@ export default function PollNotificationListener() {
         ) {
           const pollData = data as PollStartedEvent;
           const url = typeof pollData.url === "string" ? pollData.url.trim() : "";
-
+          console.log("[PollNotificationListener] firing poll:started notification, url:", url);
           api.info({
             title: "Poll started",
             description: pollData.message ?? "A new poll has started for your group.",
@@ -164,11 +177,13 @@ export default function PollNotificationListener() {
             ),
           });
         }
-      } catch {
+      } catch (err) {
+        console.error("[PollNotificationListener] error handling message", err);
       }
     };
 
-    socket.onclose = () => {
+    socket.onclose = (e) => {
+      console.log("[PollNotificationListener] WebSocket closed", e.code, e.reason);
       socketRef.current = null;
     };
   }, []);
