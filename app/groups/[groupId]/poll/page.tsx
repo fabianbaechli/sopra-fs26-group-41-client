@@ -178,18 +178,21 @@ export default function PollPage() {
     );
   }
 
-  const movies = poll.movies;
+  const movies = poll.movies
+    .filter((m) => m.movieId != null)
+    .filter((m, idx, arr) => arr.findIndex((x) => x.movieId === m.movieId) === idx);
   const movie = movies[currentIndex];
   const totalMovies = movies.length;
   const votedCount = Object.keys(votes).length;
 
-  const allAnswered = movies.every((m) => votes[m.movieId] !== undefined);
+  const validMovies = movies;
+  const allAnswered = validMovies.every((m) => votes[m.movieId] !== undefined);
 
   const handleSubmit = async () => {
     if (!allAnswered || submitting) return;
 
     const payload = {
-      votes: movies.map((m) => ({ movieId: m.movieId, interested: votes[m.movieId] })),
+      votes: validMovies.map((m) => ({ movieId: m.movieId, interested: votes[m.movieId] })),
     };
 
     try {

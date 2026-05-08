@@ -516,15 +516,15 @@ export default function GroupOverview() {
               <p className={styles.helperText}>No recommendations available.</p>
             ) : (
               <div className={styles.groupRecommendationsList}>
-                {recommendations.slice(0, 10).map((movie) => {
+                {recommendations
+                  .filter((m) => !!(m as { movieId?: string }).movieId)
+                  .filter((m, idx, arr) => arr.findIndex((x) => (x as { movieId?: string }).movieId === (m as { movieId?: string }).movieId) === idx)
+                  .slice(0, 10)
+                  .map((movie) => {
                   const recommendation = movie as {
                     movieId?: string;
                     title?: string;
                   };
-
-                  if (!recommendation.movieId) {
-                    return null;
-                  }
 
                   return (
                     <Link
