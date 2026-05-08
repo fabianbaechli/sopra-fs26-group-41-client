@@ -104,8 +104,8 @@ reason).
 | **@fabianbaechli** | 23.04.2026 | [(In the same commit) Commit 1](https://github.com/fabianbaechli/sopra-fs26-group-41-server/commit/71e0fccf178904e08bdb53e12835be77be4f02a7) | Serves the winning movies after a poll has finished. | Resolves the development task [#80](https://github.com/fabianbaechli/sopra-fs26-group-41-server/issues/80) |
 | **@EmritoHeltar** | [25.4.2026] | [[Link to Commit 2](https://github.com/fabianbaechli/sopra-fs26-group-41-server/commit/d4bb13f620306689638c168a2b61d2d08a1184a2)] | [I worked on improving the detection of movies that a user has already watched] | [Now we dont recommend movies the user has already seen] |
 | **@EmritoHeltar** | [25.4.2026] | [Link to Commit 2](https://github.com/fabianbaechli/sopra-fs26-group-41-server/commit/abcc537b07f97c888a916dd7af0c544a3a988225) | [This is the microservice side so it can calculate the tasteoerlap between 2 users] | [This is one of the things that we want users to be able to view on teh frontend. Also calculating group overlap will be very similar so its gonna help us tehre] |
-| **@username4** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **@username4** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@BB8006** | [24.04.2026 | https://github.com/fabianbaechli/sopra-fs26-group-41-client/commit/42f8855f55368ee7041ff4519f5d4b786d941c9c<br>https://github.com/fabianbaechli/sopra-fs26-group-41-client/commit/693593a6ed994fb107f6a5caf4d6b5192d136930 | Implemented the frontend poll page with active poll loading, poll state handling, and a local Yes/No voting flow. Users can review and edit their answers before submission. | This contribution is important because it turns the poll feature into an actual user-facing voting flow. Without it, members could be invited to polls but had no usable page to view movies or record their choices. |
+| **@BB8006** | 24.04.2026 | https://github.com/fabianbaechli/sopra-fs26-group-41-client/commit/eaca0c93198008d5b48ebb12c7607da0b474f983 | Implemented poll answer submission by sending all local Yes/No choices in one bulk request to the vote endpoint. | This completes the poll interaction by actually saving members’ choices, allowing the group poll to progress toward final results. |
 
 ---
 
@@ -119,7 +119,7 @@ reason).
 | **@fabianbaechli** | 02.05.2026 | [Commit 2](https://github.com/fabianbaechli/sopra-fs26-group-41-server/commit/5ef72c9087def35ab81eccc8077973ab227e4bbb) | Added the ability to track drawing strokes in the backend + sending the relevant websocket notifications for users joining the drawing session. | Makes tracking drawing strokes possible, handles presence notifications on join. |
 | **@EmritoHeltar** | [27.4.2026] | [[Link to Commit 2]](https://github.com/fabianbaechli/sopra-fs26-group-41-server/commit/0988d205a95f02f51503eb806247b145168eb535) | [Incorporate the popularity of a movie into the Recommendations] | [THis helps us recommend fringe movies to users that like fringe movies and non fringe movies to people that like mainstream movies] |
 | **@EmritoHeltar** | [3.5.2026] | [[Link to Commit 2]](https://github.com/fabianbaechli/sopra-fs26-group-41-server/commit/aaaf58da0a5234db94810aa3d973afb8fe6d040d) | This is just notifing the user when a poll is finished and also notifying them what the winner is | [This is needed for our colaboration feature so we meet the requirements] |
-| **@username4** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **@username4** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
