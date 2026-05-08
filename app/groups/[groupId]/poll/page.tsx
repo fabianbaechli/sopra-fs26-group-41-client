@@ -350,7 +350,7 @@ export default function PollPage() {
                 )}
               </div>
 
-              {movie.genres && movie.genres.length > 0 && (
+              {Array.isArray(movie.genres) && movie.genres.length > 0 && (
                 <div className={styles.genreWrap}>
                   {movie.genres.map((g) => (
                     <span key={g} className={styles.genrePill}>{g}</span>
