@@ -1243,6 +1243,59 @@
   margin: 0;
 }
 
+.groupProfilePictureWrap {
+  position: relative;
+  display: inline-block;
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.groupProfilePicture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+.groupProfilePictureFallback {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 244, 235, 0.12);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.groupProfilePictureOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.groupProfilePictureWrap:hover .groupProfilePictureOverlay {
+  opacity: 1;
+}
+
 .groupMatchCard {
   padding: 20px;
   min-width: 220px;

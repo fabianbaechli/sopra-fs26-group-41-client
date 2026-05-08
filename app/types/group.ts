@@ -40,3 +40,19 @@ export interface GroupSummary {
 export interface GroupsListResponse {
   groups: GroupSummary[];
 }
+
+export interface DrawingStroke {
+  strokeId: string;
+  userId: number;
+  color: string;
+  width: number;
+  points: [number, number][];
+}
+
+export interface DrawingJoinResponse {
+  sessionId: string;
+  userId: number;
+  drawingState: {
+    strokes: DrawingStroke[];
+  };
+}

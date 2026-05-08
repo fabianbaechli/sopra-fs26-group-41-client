@@ -20,7 +20,11 @@ type PollFinishedEvent = {
   pollResultsUrl?: string;
 };
 
-type PollWebSocketEvent = PollStartedEvent | PollFinishedEvent;
+type DrawingStartedEvent = {
+  type: "drawing";
+  event: "started";
+  groupId?: number;
+};
 
 function getWsDomain(): string {
   return getApiDomain().replace(/^http/, "ws");
@@ -55,7 +59,7 @@ export default function PollNotificationListener() {
     if (!token) return;
 
     const socket = new WebSocket(
-      `${getWsDomain()}/ws?token=${encodeURIComponent(token)}`,
+      `${getWsDomain()}/ws?token=${encodeURIComponent(token)}`
     );
     socketRef.current = socket;
 
@@ -63,18 +67,22 @@ export default function PollNotificationListener() {
       try {
         if (typeof messageEvent.data !== "string") return;
 
-        const data = JSON.parse(messageEvent.data) as PollWebSocketEvent;
-        if (data.type !== "poll") return;
+        const data = JSON.parse(messageEvent.data) as unknown;
+        if (typeof data !== "object" || data === null) return;
 
         const api = notificationRef.current;
         const nav = routerRef.current;
 
-        if (data.event === "started") {
-          const url = typeof data.url === "string" ? data.url.trim() : "";
+        if (
+          (data as PollStartedEvent).type === "poll" &&
+          (data as PollStartedEvent).event === "started"
+        ) {
+          const pollData = data as PollStartedEvent;
+          const url = typeof pollData.url === "string" ? pollData.url.trim() : "";
 
           api.info({
             title: "Poll started",
-            description: data.message ?? "A new poll has started for your group.",
+            description: pollData.message ?? "A new poll has started for your group.",
             duration: 0,
             btn: url ? (
               <Button
@@ -91,18 +99,24 @@ export default function PollNotificationListener() {
           });
         }
 
-        if (data.event === "finished") {
+        if (
+          (data as PollFinishedEvent).type === "poll" &&
+          (data as PollFinishedEvent).event === "finished"
+        ) {
+          const pollData = data as PollFinishedEvent;
+
           let redirectUrl: string | null = null;
 
-          if (typeof data.pollResultsUrl === "string" && data.pollResultsUrl.trim()) {
-            redirectUrl = data.pollResultsUrl.trim();
-          } else if (typeof data.groupId === "number") {
-            redirectUrl = `/groups/${data.groupId}`;
+          if (
+            typeof pollData.pollResultsUrl === "string" &&
+            pollData.pollResultsUrl.trim()
+          ) {
+            redirectUrl = pollData.pollResultsUrl.trim();
+          } else if (typeof pollData.groupId === "number") {
+            redirectUrl = `/groups/${pollData.groupId}`;
           }
 
           if (!redirectUrl) return;
-
-          const finalUrl = redirectUrl;
 
           api.info({
             title: "Poll finished",
@@ -114,7 +128,7 @@ export default function PollNotificationListener() {
                 size="small"
                 onClick={() => {
                   api.destroy();
-                  nav.push(finalUrl);
+                  nav.push(redirectUrl!);
                 }}
               >
                 View Results
@@ -122,8 +136,34 @@ export default function PollNotificationListener() {
             ),
           });
         }
+
+        if (
+          (data as DrawingStartedEvent).type === "drawing" &&
+          (data as DrawingStartedEvent).event === "started"
+        ) {
+          const drawingData = data as DrawingStartedEvent;
+
+          if (!drawingData.groupId) return;
+
+          api.info({
+            title: "Drawing started",
+            description: "A drawing session has started for your group.",
+            duration: 0,
+            btn: (
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => {
+                  api.destroy();
+                  nav.push(`/groups/${drawingData.groupId}/canvas`);
+                }}
+              >
+                Open Canvas
+              </Button>
+            ),
+          });
+        }
       } catch {
-        // Ignore malformed websocket messages.
       }
     };
 

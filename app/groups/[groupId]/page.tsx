@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button, Spin } from "antd";
 import { TeamOutlined, CopyOutlined, CheckOutlined, UserOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import { ApiService } from "@/api/apiService";
-import { GroupDetails } from "@/types/group";
+import { GroupDetails, DrawingJoinResponse } from "@/types/group";
 import styles from "@/styles/page.module.css";
 import { PollResultMovie, PollResultsResponse } from "@/types/poll";
 
@@ -36,6 +36,9 @@ export default function GroupOverview() {
   const [pollError, setPollError] = useState<string | null>(null);
   const [pollOwnerMessage, setPollOwnerMessage] = useState<string | null>(null);
   const [isStartPollDialogOpen, setIsStartPollDialogOpen] = useState<boolean>(false);
+
+  const [joiningDrawingSession, setJoiningDrawingSession] = useState<boolean>(false);
+  const [drawingJoinError, setDrawingJoinError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!groupId) return;
@@ -245,6 +248,29 @@ export default function GroupOverview() {
     }
   };
 
+  const handleJoinDrawingSession = async () => {
+    if (joiningDrawingSession) return;
+
+    setJoiningDrawingSession(true);
+    setDrawingJoinError(null);
+
+    try {
+      const api = new ApiService();
+      const response = await api.get<DrawingJoinResponse>(`/groups/${groupId}/drawing/join`); router.push(`/groups/${groupId}/canvas?sessionId=${encodeURIComponent(response.sessionId)}`);
+    } catch (err: unknown) {
+      const apiError = err as { status?: number; message?: string };
+
+      if (apiError.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      setDrawingJoinError(apiError.message ?? "Failed to join drawing session.");
+    } finally {
+      setJoiningDrawingSession(false);
+    }
+  };
+
   const owner = group?.members.find((member) => member.id === group.ownerId);
 
   const groupMatchReason = group && group.members.length < 2
@@ -307,6 +333,33 @@ export default function GroupOverview() {
           <div className={`${styles.shellCard} ${styles.softCard} ${styles.groupInviteCard}`}>
             <div className={styles.groupSummaryLayout}>
               <div className={styles.groupSummaryMain}>
+                <div
+                  className={styles.groupProfilePictureWrap}
+                  onClick={handleJoinDrawingSession}
+                  style={{ opacity: joiningDrawingSession ? 0.6 : 1 }}
+                >
+                  {group.groupProfilePicture ? (
+                    <img
+                      src={group.groupProfilePicture}
+                      alt="Group profile picture"
+                      className={styles.groupProfilePicture}
+                    />
+                  ) : (
+                    <div className={styles.groupProfilePictureFallback}>
+                      <span>No picture</span>
+                    </div>
+                  )}
+                  <div className={styles.groupProfilePictureOverlay}>
+                    <span>{joiningDrawingSession ? "Joining..." : "Click to edit"}</span>
+                  </div>
+                </div>
+
+                {drawingJoinError && (
+                  <p className={styles.helperText} style={{ color: "#e2a684", marginBottom: 8 }}>
+                    {drawingJoinError}
+                  </p>
+                )}
+
                 <h2 className={`${styles.username} ${styles.groupSummaryTitle}`}>
                   {group.name}
                 </h2>
