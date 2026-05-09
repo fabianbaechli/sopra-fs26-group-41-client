@@ -1243,11 +1243,24 @@
   margin: 0;
 }
 
+.groupSummaryPfpRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.groupSummaryInfo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .groupProfilePictureWrap {
   position: relative;
-  display: inline-block;
-  width: 96px;
-  height: 96px;
+  display: block;
+  width: 168px;
+  height: 168px;
   border-radius: 12px;
   margin-bottom: 16px;
   cursor: pointer;
@@ -1283,6 +1296,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   opacity: 0;
   transition: opacity 0.18s ease;
   font-size: 12px;
