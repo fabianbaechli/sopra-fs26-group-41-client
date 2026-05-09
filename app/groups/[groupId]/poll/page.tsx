@@ -41,6 +41,7 @@ export default function PollPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [overlaps, setOverlaps] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!groupId) return;
@@ -76,6 +77,51 @@ export default function PollPage() {
     fetchPoll();
     return () => { isMounted = false; };
   }, [groupId, router]);
+
+  useEffect(() => {
+    if (!poll || !poll.movies || poll.movies.length === 0) return;
+
+    let isMounted = true;
+
+    const uniqueMovies = poll.movies
+      .filter((movie) => movie.movieId != null)
+      .filter((movie, index, array) => array.findIndex((other) => other.movieId === movie.movieId) === index);
+
+    const fetchOverlapsForAllMovies = async () => {
+      const api = new ApiService();
+
+      for (const movie of uniqueMovies) {
+        try {
+          const response = await api.get<number | { tasteOverlap?: number | null } | null>(
+            `/movies/${movie.movieId}/overlap`
+          );
+
+          if (!isMounted) return;
+
+          let overlapValue: number | null = null;
+
+          if (typeof response === "number") {
+            overlapValue = response;
+          } else if (
+            typeof response === "object" &&
+            response !== null &&
+            typeof response.tasteOverlap === "number"
+          ) {
+            overlapValue = response.tasteOverlap;
+          }
+
+          if (typeof overlapValue === "number" && !isNaN(overlapValue)) {
+            setOverlaps((previous) => ({ ...previous, [movie.movieId]: overlapValue as number }));
+          }
+        } catch {
+          // ignore, some taste overlaps may not compute, so we just skip it here
+        }
+      }
+    };
+
+    fetchOverlapsForAllMovies();
+    return () => { isMounted = false; };
+  }, [poll]);
 
   const backToGroup = `/groups/${groupId}`;
 
@@ -237,7 +283,7 @@ export default function PollPage() {
             </p>
 
             <div className={styles.pollReviewList}>
-              {movies.map((m, idx) => {
+              {movies.map((m) => {
                 const vote = votes[m.movieId];
                 return (
                   <div key={m.movieId} className={`${styles.softCard} ${styles.pollReviewItem}`}>
@@ -253,16 +299,18 @@ export default function PollPage() {
                       </div>
                     </div>
                     <div className={styles.pollReviewItemRight}>
-                      <span className={vote ? styles.pollVoteBadgeYes : styles.pollVoteBadgeNo}>
-                        {vote === undefined ? "—" : vote ? "Yes" : "No"}
-                      </span>
-                      <Button
-                        className={styles.pollEditButton}
-                        size="small"
-                        onClick={() => { setShowReview(false); setCurrentIndex(idx); }}
+                      <button
+                        className={`${styles.pollReviewToggleNo} ${vote === false ? styles.pollReviewToggleActive : styles.pollReviewToggleDim}`}
+                        onClick={() => setVotes((previous) => ({ ...previous, [m.movieId]: false }))}
                       >
-                        Edit
-                      </Button>
+                        <CloseOutlined />
+                      </button>
+                      <button
+                        className={`${styles.pollReviewToggleYes} ${vote === true ? styles.pollReviewToggleActive : styles.pollReviewToggleDim}`}
+                        onClick={() => setVotes((previous) => ({ ...previous, [m.movieId]: true }))}
+                      >
+                        <CheckOutlined />
+                      </button>
                     </div>
                   </div>
                 );
@@ -339,8 +387,10 @@ export default function PollPage() {
                 {movie.imdbRating !== undefined && (
                   <span className={styles.helperText}>⭐ {movie.imdbRating}</span>
                 )}
-                {movie.tasteOverlap !== undefined && (
-                  <span className={styles.helperText}>{movie.tasteOverlap}% match</span>
+                {(overlaps[movie.movieId] !== undefined || movie.tasteOverlap !== undefined) && (
+                  <span className={styles.helperText}>
+                    {overlaps[movie.movieId] ?? movie.tasteOverlap}% match
+                  </span>
                 )}
               </div>
 
