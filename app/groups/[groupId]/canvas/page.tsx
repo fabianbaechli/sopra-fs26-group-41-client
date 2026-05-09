@@ -3,6 +3,8 @@
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getApiDomain } from "@/utils/domain";
+import { ApiService } from "@/api/apiService";
+import { DrawingJoinResponse } from "@/types/group";
 import { Button } from "antd";
 import styles from "@/styles/page.module.css";
 
@@ -45,6 +47,14 @@ export default function CanvasPage() {
       })
     );
   };
+
+  useEffect(() => {
+    if (sessionId) return;
+    const api = new ApiService();
+    api.get<DrawingJoinResponse>(`/groups/${groupId}/drawing/join`)
+      .then(res => router.replace(`/groups/${groupId}/canvas?sessionId=${encodeURIComponent(res.sessionId)}`))
+      .catch(() => router.replace(`/groups/${groupId}`));
+  }, [groupId, sessionId, router]);
 
   useEffect(() => {
     if (!sessionId) return;

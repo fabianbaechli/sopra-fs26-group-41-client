@@ -1,190 +1,146 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { App, Button } from "antd";
 import { getApiDomain } from "@/utils/domain";
+import styles from "@/styles/page.module.css";
 
-type PollStartedEvent = {
-  type: "poll";
-  event: "started";
-  message?: string;
-  url?: string;
+type Notif = {
+  id: number;
+  title: string;
+  body: string;
+  actionLabel?: string;
+  actionUrl?: string;
 };
 
-type PollFinishedEvent = {
-  type: "poll";
-  event: "finished";
-  pollId?: number;
-  groupId?: number;
-  pollResultsUrl?: string;
-};
-
-type DrawingStartedEvent = {
-  type: "drawing";
-  event: "started";
-  groupId?: number;
-};
+type PollStartedEvent    = { type: "poll";    event: "started";  message?: string; url?: string; };
+type PollFinishedEvent   = { type: "poll";    event: "finished"; pollId?: number; groupId?: number; pollResultsUrl?: string; };
+type DrawingStartedEvent = { type: "drawing"; event: "started";  groupId?: number; sessionId?: string; };
 
 function getWsDomain(): string {
   return getApiDomain().replace(/^http/, "ws");
 }
 
+function shouldSuppress(type: string, event: string): boolean {
+  try {
+    const raw = localStorage.getItem("suppressNotif");
+    if (!raw) return false;
+    const s = JSON.parse(raw) as { type: string; event: string; ts: number };
+    if (s.type === type && s.event === event && Date.now() - s.ts < 5000) {
+      localStorage.removeItem("suppressNotif");
+      return true;
+    }
+  } catch { }
+  return false;
+}
+
 export default function PollNotificationListener() {
   const router = useRouter();
   const pathname = usePathname();
-  const { notification } = App.useApp();
+
+  const [notifs, setNotifs] = useState<Notif[]>([]);
+  const nextId = useRef(0);
+  const notifTimers = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
   const routerRef = useRef(router);
-  const notificationRef = useRef(notification);
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const addNotifRef = useRef<(n: Omit<Notif, "id">) => void>(() => { });
 
-  useEffect(() => {
-    routerRef.current = router;
-  }, [router]);
+  useEffect(() => { routerRef.current = router; }, [router]);
 
-  useEffect(() => {
-    notificationRef.current = notification;
-  }, [notification]);
+  const addNotif = useCallback((n: Omit<Notif, "id">) => {
+    const id = ++nextId.current;
+    setNotifs(prev => [...prev, { ...n, id }]);
+    const timer = setTimeout(() => {
+      notifTimers.current.delete(id);
+      setNotifs(prev => prev.filter(x => x.id !== id));
+    }, 35000);
+    notifTimers.current.set(id, timer);
+  }, []);
 
-  const connectSocket = React.useCallback(() => {
+  useEffect(() => { addNotifRef.current = addNotif; }, [addNotif]);
+
+  const dismiss = (id: number) => {
+    const timer = notifTimers.current.get(id);
+    if (timer) clearTimeout(timer);
+    notifTimers.current.delete(id);
+    setNotifs(prev => prev.filter(n => n.id !== id));
+  };
+
+  const connectSocket = useCallback(() => {
     if (typeof window === "undefined") return;
 
     const existing = socketRef.current;
-    if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
-      console.log("[PollNotificationListener] socket already open/connecting, skipping");
-      return;
-    }
+    if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) return;
 
     const token = localStorage.getItem("token");
-    if (!token) {
-      console.log("[PollNotificationListener] no token, skipping connect");
-      return;
-    }
+    if (!token) return;
 
-    const wsUrl = `${getWsDomain()}/ws?token=${encodeURIComponent(token)}`;
-    console.log("[PollNotificationListener] connecting to", wsUrl.replace(/token=.*/, "token=***"));
-    const socket = new WebSocket(wsUrl);
+    const socket = new WebSocket(`${getWsDomain()}/ws?token=${encodeURIComponent(token)}`);
     socketRef.current = socket;
 
-    socket.onopen = () => {
-      console.log("[PollNotificationListener] WebSocket connected");
-    };
-
-    socket.onerror = (e) => {
-      console.error("[PollNotificationListener] WebSocket error", e);
-    };
+    socket.onerror = () => { };
 
     socket.onmessage = (messageEvent) => {
-      console.log("[PollNotificationListener] message received:", messageEvent.data);
       try {
         if (typeof messageEvent.data !== "string") return;
-
         const data = JSON.parse(messageEvent.data) as unknown;
         if (typeof data !== "object" || data === null) return;
 
-        const api = notificationRef.current;
-        const nav = routerRef.current;
+        const d = data as Record<string, unknown>;
 
-        if (
-          (data as PollStartedEvent).type === "poll" &&
-          (data as PollStartedEvent).event === "started"
-        ) {
+        if (d.type === "poll" && d.event === "started") {
+          if (shouldSuppress("poll", "started")) return;
           const pollData = data as PollStartedEvent;
           const url = typeof pollData.url === "string" ? pollData.url.trim() : "";
-          console.log("[PollNotificationListener] firing poll:started notification, url:", url);
-          api.info({
+          addNotifRef.current({
             title: "Poll started",
-            description: pollData.message ?? "A new poll has started for your group.",
-            duration: 0,
-            btn: url ? (
-              <Button
-                type="primary"
-                size="small"
-                onClick={() => {
-                  api.destroy();
-                  nav.push(url);
-                }}
-              >
-                Join Poll
-              </Button>
-            ) : undefined,
+            body: pollData.message ?? "A new poll has started for your group.",
+            actionLabel: url ? "Join Poll" : undefined,
+            actionUrl: url || undefined,
           });
         }
 
-        if (
-          (data as PollFinishedEvent).type === "poll" &&
-          (data as PollFinishedEvent).event === "finished"
-        ) {
+        if (d.type === "poll" && d.event === "finished") {
+          if (shouldSuppress("poll", "finished")) return;
           const pollData = data as PollFinishedEvent;
-
           let redirectUrl: string | null = null;
-
-          if (
-            typeof pollData.pollResultsUrl === "string" &&
-            pollData.pollResultsUrl.trim()
-          ) {
+          if (typeof pollData.pollResultsUrl === "string" && pollData.pollResultsUrl.trim()) {
             redirectUrl = pollData.pollResultsUrl.trim();
           } else if (typeof pollData.groupId === "number") {
             redirectUrl = `/groups/${pollData.groupId}`;
           }
-
           if (!redirectUrl) return;
-
-          const finalUrl = redirectUrl;
-          api.info({
+          addNotifRef.current({
             title: "Poll finished",
-            description: "The group poll has finished. See what your group picked.",
-            duration: 0,
-            btn: (
-              <Button
-                type="primary"
-                size="small"
-                onClick={() => {
-                  api.destroy();
-                  nav.push(finalUrl);
-                }}
-              >
-                View Results
-              </Button>
-            ),
+            body: "The group poll has finished. See what your group picked.",
+            actionLabel: "View Results",
+            actionUrl: redirectUrl,
           });
         }
 
-        if (
-          (data as DrawingStartedEvent).type === "drawing" &&
-          (data as DrawingStartedEvent).event === "started"
-        ) {
+        if (d.type === "drawing" && d.event === "started") {
+          if (shouldSuppress("drawing", "started")) return;
           const drawingData = data as DrawingStartedEvent;
-
-          if (!drawingData.groupId) return;
-
-          api.info({
-            title: "Drawing started",
-            description: "A drawing session has started for your group.",
-            duration: 0,
-            btn: (
-              <Button
-                type="primary"
-                size="small"
-                onClick={() => {
-                  api.destroy();
-                  nav.push(`/groups/${drawingData.groupId}/canvas`);
-                }}
-              >
-                Open Canvas
-              </Button>
-            ),
+          const groupId = drawingData.groupId ?? null;
+          const sessionId = drawingData.sessionId ?? null;
+          const canvasUrl = groupId
+            ? sessionId
+              ? `/groups/${groupId}/canvas?sessionId=${encodeURIComponent(sessionId)}`
+              : `/groups/${groupId}/canvas`
+            : null;
+          addNotifRef.current({
+            title: "Drawing session started",
+            body: "A drawing session has started for your group.",
+            actionLabel: canvasUrl ? "Open Canvas" : undefined,
+            actionUrl: canvasUrl ?? undefined,
           });
         }
-      } catch (err) {
-        console.error("[PollNotificationListener] error handling message", err);
-      }
+      } catch { }
     };
 
     socket.onclose = (e) => {
-      console.log("[PollNotificationListener] WebSocket closed", e.code, e.reason);
       socketRef.current = null;
       if (e.code !== 1000) {
         reconnectTimerRef.current = setTimeout(connectSocket, 3000);
@@ -192,7 +148,6 @@ export default function PollNotificationListener() {
     };
   }, []);
 
-  // Open socket on mount, close only on unmount
   useEffect(() => {
     connectSocket();
     return () => {
@@ -205,10 +160,31 @@ export default function PollNotificationListener() {
     };
   }, [connectSocket]);
 
-  // On navigation, reconnect only if socket is gone (handles post-login transition)
-  useEffect(() => {
-    connectSocket();
-  }, [pathname, connectSocket]);
+  useEffect(() => { connectSocket(); }, [pathname, connectSocket]);
 
-  return null;
+  if (notifs.length === 0) return null;
+
+  return (
+    <div className={styles.notifStack}>
+      {notifs.map(n => (
+        <div key={n.id} className={styles.notifCard}>
+          <div className={styles.notifHeader}>
+            <span className={styles.notifTitle}>{n.title}</span>
+            <button className={styles.notifClose} onClick={() => dismiss(n.id)}>×</button>
+          </div>
+          <p className={styles.notifBody}>{n.body}</p>
+          {n.actionLabel && n.actionUrl && (
+            <div className={styles.notifActions}>
+              <button
+                className={styles.notifActionBtn}
+                onClick={() => { dismiss(n.id); routerRef.current.push(n.actionUrl!); }}
+              >
+                {n.actionLabel}
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }

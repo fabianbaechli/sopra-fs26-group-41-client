@@ -1750,16 +1750,54 @@
   flex-shrink: 0;
 }
 
-.pollEditButton {
-  background: transparent !important;
-  border: 1px solid rgba(255, 244, 235, 0.25) !important;
-  color: #cbb6a4 !important;
-  border-radius: 8px !important;
+.pollReviewToggleNo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(178, 49, 35, 0.45);
+  background: transparent;
+  color: #e2836e;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
 }
 
-.pollEditButton:hover {
-  border-color: rgba(255, 244, 235, 0.55) !important;
-  color: #fff4eb !important;
+.pollReviewToggleNo:hover {
+  background: rgba(178, 49, 35, 0.2);
+  border-color: rgba(178, 49, 35, 0.75);
+  opacity: 1 !important;
+}
+
+.pollReviewToggleYes {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 139, 34, 0.45);
+  background: transparent;
+  color: #6fcf6f;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.pollReviewToggleYes:hover {
+  background: rgba(34, 139, 34, 0.2);
+  border-color: rgba(34, 139, 34, 0.75);
+  opacity: 1 !important;
+}
+
+.pollReviewToggleActive {
+  opacity: 1;
+}
+
+.pollReviewToggleDim {
+  opacity: 0.28;
 }
 
 .pollSubmitArea {
@@ -1858,4 +1896,93 @@
   color: #8f6d60;
   font-size: 13px;
   margin-bottom: 20px;
+}
+
+.notifStack {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+  pointer-events: none;
+}
+
+.notifCard {
+  background: rgba(28, 22, 20, 0.97);
+  border: 1px solid rgba(255, 244, 235, 0.14);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  pointer-events: all;
+  animation: notifSlideIn 0.2s ease;
+}
+
+@keyframes notifSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.notifHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.notifTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff6a55;
+}
+
+.notifBody {
+  font-size: 13px;
+  color: rgba(255, 244, 235, 0.65);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.notifClose {
+  background: none;
+  border: none;
+  color: rgba(255, 244, 235, 0.3);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 8px;
+  transition: color 0.15s;
+}
+
+.notifClose:hover {
+  color: rgba(255, 244, 235, 0.7);
+}
+
+.notifActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.notifActionBtn {
+  background: rgba(255, 106, 85, 0.12);
+  border: 1px solid rgba(255, 106, 85, 0.35);
+  border-radius: 6px;
+  color: #ff6a55;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 5px 13px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.notifActionBtn:hover {
+  background: rgba(255, 106, 85, 0.22);
+  border-color: rgba(255, 106, 85, 0.55);
 }

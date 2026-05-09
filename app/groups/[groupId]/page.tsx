@@ -210,6 +210,7 @@ export default function GroupOverview() {
 
       const api = new ApiService();
       await api.post(`/groups/${groupId}/poll`);
+      localStorage.setItem("suppressNotif", JSON.stringify({ type: "poll", event: "started", ts: Date.now() }));
       setIsStartPollDialogOpen(false);
       router.push(`/groups/${groupId}/poll`);
     } catch (error: unknown) {
@@ -251,7 +252,9 @@ export default function GroupOverview() {
 
     try {
       const api = new ApiService();
-      const response = await api.get<DrawingJoinResponse>(`/groups/${groupId}/drawing/join`); router.push(`/groups/${groupId}/canvas?sessionId=${encodeURIComponent(response.sessionId)}`);
+      const response = await api.get<DrawingJoinResponse>(`/groups/${groupId}/drawing/join`);
+      localStorage.setItem("suppressNotif", JSON.stringify({ type: "drawing", event: "started", ts: Date.now() }));
+      router.push(`/groups/${groupId}/canvas?sessionId=${encodeURIComponent(response.sessionId)}`);
     } catch (err: unknown) {
       const apiError = err as { status?: number; message?: string };
 
