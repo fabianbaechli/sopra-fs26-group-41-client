@@ -65,9 +65,9 @@ const CreateGroup: React.FC = () => {
           return;
         }
 
-        setError(err.message);
+        setError("Something went wrong. Please try again.");
       } else {
-        setError("Failed to create group.");
+        setError("Something went wrong. Please try again.");
       }
     } finally {
       setIsSubmitting(false);

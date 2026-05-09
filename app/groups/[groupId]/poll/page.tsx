@@ -65,10 +65,8 @@ export default function PollPage() {
         }
         if (status === 404) {
           setError("No active poll exists for this group.");
-        } else if (err instanceof Error) {
-          setError(err.message);
         } else {
-          setError("Failed to load poll.");
+          setError("Could not load the poll. Please try again.");
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -90,11 +88,6 @@ export default function PollPage() {
             <h1 className={styles.brand}>Movieblendr.</h1>
           </div>
         </Link>
-      </div>
-      <div className={styles.heroRight}>
-        <Button className={styles.authButton} onClick={() => router.push(backToGroup)}>
-          Back to group
-        </Button>
       </div>
     </div>
   );
@@ -214,8 +207,6 @@ export default function PollPage() {
           } catch { }
         }
         setSubmitError(reason ?? "The poll is closed or you have already submitted your answers.");
-      } else if (err instanceof Error) {
-        setSubmitError(err.message);
       } else {
         setSubmitError("Submission failed. Please try again.");
       }

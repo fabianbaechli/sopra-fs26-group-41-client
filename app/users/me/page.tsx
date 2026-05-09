@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Spin, Typography, Button, Input, Tooltip } from "antd";
-import { TeamOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { TeamOutlined, InfoCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import type { MyProfile, LetterboxdImportResponse } from "@/types/user";
@@ -29,6 +29,7 @@ const Profile: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resetFileInput = () => {
     if (fileInputRef.current) {
@@ -40,6 +41,7 @@ const Profile: React.FC = () => {
     setIsUploadDialogOpen(true);
     setUploadError(null);
     setSelectedFile(null);
+    setUploadSuccess(false);
     resetFileInput();
   };
 
@@ -48,6 +50,7 @@ const Profile: React.FC = () => {
     setIsUploadDialogOpen(false);
     setUploadError(null);
     setSelectedFile(null);
+    setUploadSuccess(false);
     resetFileInput();
   };
 
@@ -106,16 +109,10 @@ const Profile: React.FC = () => {
 
       setProfile(updatedProfile);
       setError(null);
-      setSelectedFile(null);
-      setIsUploadDialogOpen(false);
-      resetFileInput();
+      setUploadSuccess(true);
     } catch (err) {
       resetFileInput();
-      if (err instanceof Error) {
-        setUploadError(err.message);
-      } else {
-        setUploadError("Upload failed. Please try again.");
-      }
+      setUploadError("Upload failed. Please check the file and try again.");
     } finally {
       setIsUploading(false);
     }
@@ -163,11 +160,7 @@ const Profile: React.FC = () => {
           return;
         }
 
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Failed to load profile.");
-        }
+        setError("Could not load your profile. Please refresh the page.");
 
         setProfile({
           id: 0,
@@ -345,68 +338,97 @@ const Profile: React.FC = () => {
             <Title level={3} className={styles.modalTitle}>
               {isConnected ? "Update Letterboxd Data" : "Upload Letterboxd Data"}
             </Title>
-            <Text className={styles.modalSubtitle}>
-              {isConnected
-                ? "Replace your current Movieblendr stats with a fresh Letterboxd export."
-                : "Import your Letterboxd history to generate your statistics."}
-            </Text>
 
-            <div className={styles.instructionBlock}>
-              <Text className={styles.instructionText}>How to get your data:</Text>
-              <ul className={styles.instructionList}>
-                <li>Go to <a href="https://letterboxd.com/settings/data/" target="_blank" rel="noopener noreferrer" className={styles.externalLink}>Letterboxd Data Settings</a></li>
-                <li>Download your account export (ZIP)</li>
-                <li>Upload the <strong>entire downloaded .zip file</strong> here</li>
-              </ul>
-            </div>
-
-            {uploadError && (
-              <div className={styles.errorAlert} style={{ marginBottom: "20px" }}>
-                <Text type="danger">{uploadError}</Text>
+            {uploadSuccess ? (
+              <div className={styles.uploadSuccessPanel}>
+                <CheckCircleOutlined className={styles.uploadSuccessIcon} />
+                <Text className={styles.uploadSuccessTitle}>Upload successful</Text>
+                <Text className={styles.uploadSuccessBody}>
+                  Your rated movies have been processed. Your stats are now up to date.
+                </Text>
+                <Button className={styles.modalConfirmButton} onClick={handleCloseDialog}>
+                  Done
+                </Button>
               </div>
+            ) : (
+              <>
+                <Text className={styles.modalSubtitle}>
+                  {isConnected
+                    ? "Replace your current Movieblendr stats with a fresh Letterboxd export."
+                    : "Import your Letterboxd history to generate your statistics."}
+                </Text>
+
+                <Text className={styles.modalLetterboxdNote}>
+                  New to Letterboxd? It&apos;s a social platform for logging and rating movies.{" "}
+                  <a href="https://letterboxd.com" target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
+                    letterboxd.com
+                  </a>
+                </Text>
+
+                <div className={styles.instructionBlock}>
+                  <Text className={styles.instructionText}>How to get your data:</Text>
+                  <ul className={styles.instructionList}>
+                    <li>Go to <a href="https://letterboxd.com/settings/data/" target="_blank" rel="noopener noreferrer" className={styles.externalLink}>Letterboxd Data Settings</a></li>
+                    <li>Download your account export (ZIP)</li>
+                    <li>Upload the <strong>entire downloaded .zip file</strong> here</li>
+                    <li>Only your <strong>rated movies</strong> are analyzed — diary entries, watchlist, and liked films are not used</li>
+                  </ul>
+                </div>
+
+                {uploadError && (
+                  <div className={styles.errorAlert} style={{ marginBottom: "20px" }}>
+                    <Text type="danger">{uploadError}</Text>
+                  </div>
+                )}
+
+                <div
+                  className={`${styles.fileDropZone} ${selectedFile && !isUploading ? styles.fileDropZoneActive : ''}`}
+                  onClick={() => { if (!isUploading) fileInputRef.current?.click(); }}
+                >
+                  <input
+                    type="file"
+                    accept=".zip"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileSelect}
+                  />
+                  {isUploading ? (
+                    <div className={styles.dropZoneEmpty}>
+                      <Text className={styles.dropZonePrompt}>Processing your data…</Text>
+                      <Text className={styles.dropZoneSecondary}>This may take a moment</Text>
+                    </div>
+                  ) : selectedFile ? (
+                    <div className={styles.fileSelectedFeedback}>
+                      <Text className={styles.selectedFileText}>📦 {selectedFile.name}</Text>
+                      <Text className={styles.fileReadyText}>Ready to upload</Text>
+                    </div>
+                  ) : (
+                    <div className={styles.dropZoneEmpty}>
+                      <Text className={styles.dropZonePrompt}>Click to browse</Text>
+                      <Text className={styles.dropZoneSecondary}>ZIP archive only</Text>
+                    </div>
+                  )}
+                </div>
+
+                <div className={styles.modalActions}>
+                  <Button
+                    onClick={handleCloseDialog}
+                    className={styles.modalCancelButton}
+                    disabled={isUploading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleConfirmUpload}
+                    className={styles.modalConfirmButton}
+                    disabled={!selectedFile || isUploading}
+                    loading={isUploading}
+                  >
+                    {isUploading ? "Uploading…" : "Confirm"}
+                  </Button>
+                </div>
+              </>
             )}
-
-            <div
-              className={`${styles.fileDropZone} ${selectedFile ? styles.fileDropZoneActive : ''}`}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                type="file"
-                accept=".zip"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={handleFileSelect}
-              />
-              {selectedFile ? (
-                <div className={styles.fileSelectedFeedback}>
-                  <Text className={styles.selectedFileText}>📦 {selectedFile.name}</Text>
-                  <Text className={styles.fileReadyText}>Ready to upload</Text>
-                </div>
-              ) : (
-                <div className={styles.dropZoneEmpty}>
-                  <Text className={styles.dropZonePrompt}>Click to browse</Text>
-                  <Text className={styles.dropZoneSecondary}>ZIP archive only</Text>
-                </div>
-              )}
-            </div>
-
-            <div className={styles.modalActions}>
-              <Button
-                onClick={handleCloseDialog}
-                className={styles.modalCancelButton}
-                disabled={isUploading}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmUpload}
-                className={styles.modalConfirmButton}
-                disabled={!selectedFile || isUploading}
-                loading={isUploading}
-              >
-                {isUploading ? "Uploading..." : "Confirm"}
-              </Button>
-            </div>
           </div>
         </div>
       )}

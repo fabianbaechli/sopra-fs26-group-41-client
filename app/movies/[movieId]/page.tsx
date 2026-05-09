@@ -94,8 +94,7 @@ const MoviePage: React.FC = () => {
           return;
         }
 
-        const message = err instanceof Error ? err.message : "Failed to load movie details.";
-        setError(message);
+        setError("Could not load this movie. Please go back and try again.");
         setMovieLoading(false);
         setOverlapState({ status: "error" });
       }

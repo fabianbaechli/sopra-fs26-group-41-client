@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Card, Spin, Typography, Button } from "antd";
+import { Card, Spin, Typography, Button, Input } from "antd";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import type { MovieSearchDTO, MovieSearchResponse } from "@/types/movie";
@@ -10,6 +10,7 @@ import styles from "@/styles/page.module.css";
 import Link from "next/link";
 
 const { Title, Text } = Typography;
+const { Search } = Input;
 
 const SearchResultsContent: React.FC = () => {
   const router = useRouter();
@@ -51,11 +52,7 @@ const SearchResultsContent: React.FC = () => {
           return;
         }
 
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred while searching.");
-        }
+        setError("Something went wrong while searching. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -127,6 +124,13 @@ const SearchResultsContent: React.FC = () => {
 
 const SearchResultsPage: React.FC = () => {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) return;
+    router.push(`/search?query=${encodeURIComponent(trimmedQuery)}`);
+  };
 
   return (
     <div className={styles.page}>
@@ -146,9 +150,15 @@ const SearchResultsPage: React.FC = () => {
             </Title>
           </div>
           <div className={styles.heroRight}>
-            <Button className={styles.authButton}
-              onClick={() => router.push("/users/me")}
-            >
+            <Search
+              className={styles.searchInput}
+              placeholder="Search movies..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onSearch={handleSearch}
+              enterButton
+            />
+            <Button className={styles.authButton} onClick={() => router.push("/users/me")}>
               ← Home
             </Button>
           </div>

@@ -40,6 +40,9 @@ export default function GroupOverview() {
   const [joiningDrawingSession, setJoiningDrawingSession] = useState<boolean>(false);
   const [drawingJoinError, setDrawingJoinError] = useState<string | null>(null);
 
+  const pfpHints = ["You seem bored...", "Still watching?", "Up for something fun?"];
+  const [pfpHint, setPfpHint] = useState(pfpHints[0]);
+
   useEffect(() => {
     if (!groupId) return;
 
@@ -153,11 +156,7 @@ export default function GroupOverview() {
             return;
           }
 
-          if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("Failed to load group details.");
-          }
+          setError("Could not load this group. Please try again.");
         }
       } finally {
         if (isMounted && !group) {
@@ -198,11 +197,7 @@ export default function GroupOverview() {
       await api.post(`/groups/${groupId}/leave`);
       router.push("/users/me");
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setLeaveError(err.message);
-      } else {
-        setLeaveError("Failed to leave group.");
-      }
+      setLeaveError("Could not leave the group. Please try again.");
     } finally {
       setIsLeaving(false);
     }
@@ -265,7 +260,7 @@ export default function GroupOverview() {
         return;
       }
 
-      setDrawingJoinError(apiError.message ?? "Failed to join drawing session.");
+      setDrawingJoinError("Could not join the drawing session. Please try again.");
     } finally {
       setJoiningDrawingSession(false);
     }
@@ -333,47 +328,53 @@ export default function GroupOverview() {
           <div className={`${styles.shellCard} ${styles.softCard} ${styles.groupInviteCard}`}>
             <div className={styles.groupSummaryLayout}>
               <div className={styles.groupSummaryMain}>
-                <div
-                  className={styles.groupProfilePictureWrap}
-                  onClick={handleJoinDrawingSession}
-                  style={{ opacity: joiningDrawingSession ? 0.6 : 1 }}
-                >
-                  {group.groupProfilePicture ? (
-                    <img
-                      src={group.groupProfilePicture}
-                      alt="Group profile picture"
-                      className={styles.groupProfilePicture}
-                    />
-                  ) : (
-                    <div className={styles.groupProfilePictureFallback}>
-                      <span>No picture</span>
+                <div className={styles.groupSummaryPfpRow}>
+                  <div>
+                    <div
+                      className={styles.groupProfilePictureWrap}
+                      onClick={handleJoinDrawingSession}
+                      onMouseEnter={() => setPfpHint(pfpHints[Math.floor(Math.random() * pfpHints.length)])}
+                      style={{ opacity: joiningDrawingSession ? 0.6 : 1 }}
+                    >
+                      {group.groupProfilePicture ? (
+                        <img
+                          src={group.groupProfilePicture}
+                          alt="Group profile picture"
+                          className={styles.groupProfilePicture}
+                        />
+                      ) : (
+                        <div className={styles.groupProfilePictureFallback}>
+                          <span>No picture</span>
+                        </div>
+                      )}
+                      <div className={styles.groupProfilePictureOverlay}>
+                        <span>{joiningDrawingSession ? "Joining..." : pfpHint}</span>
+                      </div>
                     </div>
-                  )}
-                  <div className={styles.groupProfilePictureOverlay}>
-                    <span>{joiningDrawingSession ? "Joining..." : "Click to edit"}</span>
+                    {drawingJoinError && (
+                      <p className={styles.helperText} style={{ color: "#e2a684", marginTop: 6 }}>
+                        {drawingJoinError}
+                      </p>
+                    )}
                   </div>
-                </div>
 
-                {drawingJoinError && (
-                  <p className={styles.helperText} style={{ color: "#e2a684", marginBottom: 8 }}>
-                    {drawingJoinError}
-                  </p>
-                )}
-
-                <h2 className={`${styles.username} ${styles.groupSummaryTitle}`}>
-                  {group.name}
-                </h2>
-                <p className={`${styles.helperText} ${styles.groupSummaryMeta}`}>
-                  Owner: <span className={styles.username}>{owner?.username ?? "Unknown"}</span>
-                </p>
-                <p className={`${styles.helperText} ${styles.groupSummaryMeta}`}>
-                  Group ID: <span className={styles.username}> {group.id} </span>
-                </p>
-                <div className={styles.groupSummaryMembersRow}>
-                  <TeamOutlined className={styles.helperText} />
-                  <p className={`${styles.helperText} ${styles.groupSummaryMembersText}`}>
-                    {group.members.length} member{group.members.length !== 1 ? "s" : ""}
-                  </p>
+                  <div className={styles.groupSummaryInfo}>
+                    <h2 className={`${styles.username} ${styles.groupSummaryTitle}`}>
+                      {group.name}
+                    </h2>
+                    <p className={`${styles.helperText} ${styles.groupSummaryMeta}`}>
+                      Owner: <span className={styles.username}>{owner?.username ?? "Unknown"}</span>
+                    </p>
+                    <p className={`${styles.helperText} ${styles.groupSummaryMeta}`}>
+                      Group ID: <span className={styles.username}> {group.id} </span>
+                    </p>
+                    <div className={styles.groupSummaryMembersRow}>
+                      <TeamOutlined className={styles.helperText} />
+                      <p className={`${styles.helperText} ${styles.groupSummaryMembersText}`}>
+                        {group.members.length} member{group.members.length !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -521,25 +522,25 @@ export default function GroupOverview() {
                   .filter((m, idx, arr) => arr.findIndex((x) => (x as { movieId?: string }).movieId === (m as { movieId?: string }).movieId) === idx)
                   .slice(0, 10)
                   .map((movie) => {
-                  const recommendation = movie as {
-                    movieId?: string;
-                    title?: string;
-                  };
+                    const recommendation = movie as {
+                      movieId?: string;
+                      title?: string;
+                    };
 
-                  return (
-                    <Link
-                      key={recommendation.movieId}
-                      href={`/movies/${recommendation.movieId}`}
-                      className={styles.groupRecommendationLink}
-                    >
-                      <div className={`${styles.softCard} ${styles.groupRecommendationItem}`}>
-                        <p className={styles.groupRecommendationTitle}>
-                          {recommendation.title ?? "Untitled movie"}
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
+                    return (
+                      <Link
+                        key={recommendation.movieId}
+                        href={`/movies/${recommendation.movieId}`}
+                        className={styles.groupRecommendationLink}
+                      >
+                        <div className={`${styles.softCard} ${styles.groupRecommendationItem}`}>
+                          <p className={styles.groupRecommendationTitle}>
+                            {recommendation.title ?? "Untitled movie"}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
               </div>
             )}
           </div>
@@ -548,11 +549,13 @@ export default function GroupOverview() {
           <div className={`${styles.shellCard} ${styles.softCard} ${styles.groupRecommendationsCard}`}>
             <div className={styles.groupSectionHeader}>
               <h2 className={styles.sectionTitle}>Poll Results</h2>
-              <p className={styles.helperText}>
-                {currentUserId === group.ownerId
-                  ? "The owner can start a poll in the recommendations section above."
-                  : "Only the group owner can start a poll."}
-              </p>
+              {pollResults.length === 0 && !pollResultsLoading && (
+                <p className={styles.helperText}>
+                  {currentUserId === group.ownerId
+                    ? "The owner can start a poll in the recommendations section above."
+                    : "Only the group owner can start a poll."}
+                </p>
+              )}
             </div>
 
 

@@ -98,7 +98,7 @@ export default function UserProfilePage() {
             return;
           }
 
-          setError(apiError.message ?? "Failed to load user profile.");
+          setError("Could not load this user's profile. Please try again.");
         }
       } finally {
         if (isMounted && !redirectedToOwnProfile) {
