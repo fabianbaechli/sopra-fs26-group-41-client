@@ -540,11 +540,13 @@ export default function GroupOverview() {
           <div className={`${styles.shellCard} ${styles.softCard} ${styles.groupRecommendationsCard}`}>
             <div className={styles.groupSectionHeader}>
               <h2 className={styles.sectionTitle}>Poll Results</h2>
-              <p className={styles.helperText}>
-                {currentUserId === group.ownerId
-                  ? "The owner can start a poll in the recommendations section above."
-                  : "Only the group owner can start a poll."}
-              </p>
+              {pollResults.length === 0 && !pollResultsLoading && (
+                <p className={styles.helperText}>
+                  {currentUserId === group.ownerId
+                    ? "The owner can start a poll in the recommendations section above."
+                    : "Only the group owner can start a poll."}
+                </p>
+              )}
             </div>
 
 

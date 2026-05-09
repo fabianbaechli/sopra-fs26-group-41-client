@@ -89,11 +89,6 @@ export default function PollPage() {
           </div>
         </Link>
       </div>
-      <div className={styles.heroRight}>
-        <Button className={styles.authButton} onClick={() => router.push(backToGroup)}>
-          Back to group
-        </Button>
-      </div>
     </div>
   );
 
@@ -212,8 +207,6 @@ export default function PollPage() {
           } catch { }
         }
         setSubmitError(reason ?? "The poll is closed or you have already submitted your answers.");
-      } else if (err instanceof Error) {
-        setSubmitError(err.message);
       } else {
         setSubmitError("Submission failed. Please try again.");
       }
