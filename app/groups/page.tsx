@@ -48,7 +48,7 @@ const GroupsOverview: React.FC = () => {
           router.replace("/login");
           return;
         }
-        setError(err instanceof Error ? err.message : "Failed to load groups.");
+        setError("Could not load your groups. Please try again.");
       } finally {
         if (isMounted) setIsLoading(false);
       }

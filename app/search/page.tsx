@@ -52,11 +52,7 @@ const SearchResultsContent: React.FC = () => {
           return;
         }
 
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred while searching.");
-        }
+        setError("Something went wrong while searching. Please try again.");
       } finally {
         setIsLoading(false);
       }

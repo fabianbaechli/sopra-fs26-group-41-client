@@ -65,10 +65,8 @@ export default function PollPage() {
         }
         if (status === 404) {
           setError("No active poll exists for this group.");
-        } else if (err instanceof Error) {
-          setError(err.message);
         } else {
-          setError("Failed to load poll.");
+          setError("Could not load the poll. Please try again.");
         }
       } finally {
         if (isMounted) setLoading(false);

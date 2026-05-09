@@ -153,11 +153,7 @@ export default function GroupOverview() {
             return;
           }
 
-          if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("Failed to load group details.");
-          }
+          setError("Could not load this group. Please try again.");
         }
       } finally {
         if (isMounted && !group) {
@@ -198,11 +194,7 @@ export default function GroupOverview() {
       await api.post(`/groups/${groupId}/leave`);
       router.push("/users/me");
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setLeaveError(err.message);
-      } else {
-        setLeaveError("Failed to leave group.");
-      }
+      setLeaveError("Could not leave the group. Please try again.");
     } finally {
       setIsLeaving(false);
     }
@@ -265,7 +257,7 @@ export default function GroupOverview() {
         return;
       }
 
-      setDrawingJoinError(apiError.message ?? "Failed to join drawing session.");
+      setDrawingJoinError("Could not join the drawing session. Please try again.");
     } finally {
       setJoiningDrawingSession(false);
     }

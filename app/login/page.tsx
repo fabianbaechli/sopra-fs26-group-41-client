@@ -37,10 +37,11 @@ const Login: React.FC = () => {
       }
       router.push("/users/me");
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(`Login failed: ${error.message}`);
+      const status = (error as { status?: number }).status;
+      if (status === 401 || status === 403) {
+        setErrorMessage("Wrong username or password.");
       } else {
-        setErrorMessage("Login failed. Please check your credentials.");
+        setErrorMessage("Something went wrong. Please try again.");
       }
     } finally {
       setIsLoading(false);

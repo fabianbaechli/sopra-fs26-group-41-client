@@ -41,10 +41,11 @@ const Register: React.FC = () => {
       }
       router.replace("/users/me");
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(`Registration failed: ${error.message}`);
+      const status = (error as { status?: number }).status;
+      if (status === 409) {
+        setErrorMessage("This username is already taken. Please choose a different one.");
       } else {
-        setErrorMessage("Registration failed. Username might already be taken.");
+        setErrorMessage("Something went wrong. Please try again.");
       }
     } finally {
       setIsLoading(false);

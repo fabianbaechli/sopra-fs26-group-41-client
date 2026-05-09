@@ -112,11 +112,7 @@ const Profile: React.FC = () => {
       setUploadSuccess(true);
     } catch (err) {
       resetFileInput();
-      if (err instanceof Error) {
-        setUploadError(err.message);
-      } else {
-        setUploadError("Upload failed. Please try again.");
-      }
+      setUploadError("Upload failed. Please check the file and try again.");
     } finally {
       setIsUploading(false);
     }
@@ -164,11 +160,7 @@ const Profile: React.FC = () => {
           return;
         }
 
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Failed to load profile.");
-        }
+        setError("Could not load your profile. Please refresh the page.");
 
         setProfile({
           id: 0,
