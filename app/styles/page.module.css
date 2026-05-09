@@ -745,7 +745,7 @@
 }
 
 .externalLink {
-  color: #f0b08d;
+  color: #f0b08d !important;
   text-decoration: none;
   font-weight: 500;
   border-bottom: 1px solid rgba(240, 176, 141, 0.4);
@@ -753,7 +753,7 @@
 }
 
 .externalLink:hover {
-  color: #fff4eb;
+  color: #fff4eb !important;
   border-bottom-color: #fff4eb;
 }
 
@@ -1811,4 +1811,37 @@
 
 .howItWorksFab :global(.anticon) {
   font-size: 16px;
+}
+
+.uploadSuccessPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0 8px;
+  text-align: center;
+}
+
+.uploadSuccessIcon {
+  font-size: 48px;
+  color: #2f7a32;
+}
+
+.uploadSuccessTitle {
+  color: #fff4eb !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.uploadSuccessBody {
+  color: #cbb6a4;
+  font-size: 14px;
+  max-width: 300px;
+}
+
+.modalLetterboxdNote {
+  display: block;
+  color: #8f6d60;
+  font-size: 13px;
+  margin-bottom: 20px;
 }

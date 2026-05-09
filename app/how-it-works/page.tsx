@@ -46,9 +46,14 @@ export default function HowItWorksPage() {
             </Title>
             <Paragraph className={styles.helperText}>
               Movieblendr helps groups choose a movie by combining the taste profiles of all
-              group members. Instead of asking users to manually select preferences from a small
-              sample, the app uses uploaded Letterboxd rating data to estimate what each user
-              actually likes.
+              group members.{" "}
+              <a href="https://letterboxd.com" target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
+                Letterboxd
+              </a>{" "}
+              is a social platform for logging and rating movies, think of it as a diary for
+              everything you&apos;ve watched. Instead of asking users to manually select preferences
+              from a small sample, Movieblendr uses your exported Letterboxd rating history to
+              estimate your taste automatically.
             </Paragraph>
           </div>
 
@@ -61,8 +66,9 @@ export default function HowItWorksPage() {
                 Upload your Letterboxd export
               </Title>
               <Text className={styles.helperText}>
-                The app reads your rated movies and creates a personal taste profile from your
-                movie history.
+                Export your Letterboxd data and upload the ZIP file. The app reads your{" "}
+                <strong>rated movies only</strong> other entries, watchlist, and liked films
+                are not used, and builds a personal taste profile from that history.
               </Text>
             </Card>
 
