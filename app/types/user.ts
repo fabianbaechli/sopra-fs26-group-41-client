@@ -27,3 +27,11 @@ export interface LetterboxdImportResponse {
   hasLetterboxdData: boolean;
   stats: UserStats;
 }
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  hasLetterboxdData: boolean;
+  tasteOverlap?: number;
+  stats: UserStats;
+}
