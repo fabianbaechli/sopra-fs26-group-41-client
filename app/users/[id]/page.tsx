@@ -36,7 +36,7 @@ export default function UserProfilePage() {
     let isMounted = true;
 
     const fetchProfile = async () => {
-      let redirectedToOwnProfile = false;
+      const redirectedToOwnProfile = false;
 
       try {
         setLoading(true);
@@ -58,7 +58,6 @@ export default function UserProfilePage() {
                 stats: {
                   moviesLogged: me.stats?.moviesLogged ?? 0,
                   highlyRatedMovies: me.stats?.highlyRatedMovies ?? 0,
-                  topGenres: me.stats?.topGenres ?? [],
                 },
               });
 
@@ -83,7 +82,6 @@ export default function UserProfilePage() {
             stats: {
               moviesLogged: data.stats?.moviesLogged ?? 0,
               highlyRatedMovies: data.stats?.highlyRatedMovies ?? 0,
-              topGenres: data.stats?.topGenres ?? [],
             },
           });
 
@@ -243,24 +241,6 @@ export default function UserProfilePage() {
                   </Text>
                 </Card>
               </div>
-            </div>
-
-            <div className={styles.section}>
-              <Title level={3} className={styles.sectionTitle}>
-                Top Genres
-              </Title>
-
-              {profile.stats.topGenres.length > 0 ? (
-                <div className={styles.genreWrap}>
-                  {profile.stats.topGenres.map((genre) => (
-                    <span key={genre} className={styles.genrePill}>
-                      {genre}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <Text className={styles.helperText}>No top genres available yet.</Text>
-              )}
             </div>
           </>
         </Card>
