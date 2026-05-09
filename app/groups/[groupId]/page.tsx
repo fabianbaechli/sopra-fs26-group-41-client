@@ -350,7 +350,7 @@ export default function GroupOverview() {
                     </div>
                   )}
                   <div className={styles.groupProfilePictureOverlay}>
-                    <span>{joiningDrawingSession ? "Joining..." : "Click to edit"}</span>
+                    <span>{joiningDrawingSession ? "Joining..." : "Still Watching?"}</span>
                   </div>
                 </div>
 
