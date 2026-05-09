@@ -30,6 +30,7 @@ export default function CanvasPage() {
 
   const [strokes, setStrokes] = useState<DrawingStroke[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sendStroke = (stroke: DrawingStroke) => {
     if (!sessionId) return;
@@ -61,6 +62,23 @@ export default function CanvasPage() {
     const socket = new WebSocket(`${wsBaseUrl}/ws?token=${token}`);
     socketRef.current = socket;
 
+    socket.onclose = (e) => {
+      socketRef.current = null;
+      if (e.code !== 1000) {
+        reconnectTimerRef.current = setTimeout(() => {
+          const t = localStorage.getItem("token");
+          if (!t) return;
+          const wsBaseUrl = getApiDomain()
+            .replace(/^http:\/\//, "ws://")
+            .replace(/^https:\/\//, "wss://");
+          const newSocket = new WebSocket(`${wsBaseUrl}/ws?token=${t}`);
+          socketRef.current = newSocket;
+          newSocket.onmessage = socket.onmessage;
+          newSocket.onclose = socket.onclose;
+        }, 3000);
+      }
+    };
+
     socket.onmessage = (event) => {
       try {
         const data: unknown = JSON.parse(event.data);
@@ -80,7 +98,11 @@ export default function CanvasPage() {
     };
 
     return () => {
-      socket.close();
+      if (reconnectTimerRef.current !== null) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      socketRef.current?.close(1000);
       socketRef.current = null;
     };
   }, [sessionId]);

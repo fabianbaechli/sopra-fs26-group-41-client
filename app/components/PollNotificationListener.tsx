@@ -38,6 +38,7 @@ export default function PollNotificationListener() {
   const routerRef = useRef(router);
   const notificationRef = useRef(notification);
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     routerRef.current = router;
@@ -185,6 +186,9 @@ export default function PollNotificationListener() {
     socket.onclose = (e) => {
       console.log("[PollNotificationListener] WebSocket closed", e.code, e.reason);
       socketRef.current = null;
+      if (e.code !== 1000) {
+        reconnectTimerRef.current = setTimeout(connectSocket, 3000);
+      }
     };
   }, []);
 
@@ -192,7 +196,11 @@ export default function PollNotificationListener() {
   useEffect(() => {
     connectSocket();
     return () => {
-      socketRef.current?.close();
+      if (reconnectTimerRef.current !== null) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      socketRef.current?.close(1000);
       socketRef.current = null;
     };
   }, [connectSocket]);
