@@ -8,6 +8,7 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import type { GroupSummary, GroupsListResponse } from "@/types/group";
 import styles from "@/styles/page.module.css";
+import GroupPicture from "@/components/GroupPicture";
 
 const { Title, Text } = Typography;
 
@@ -110,15 +111,12 @@ const GroupsOverview: React.FC = () => {
                   onClick={() => router.push(`/groups/${group.id}`)}
                 >
                   <div className={styles.groupCardPictureWrap}>
-                    {group.groupProfilePicture ? (
-                      <img
-                        src={group.groupProfilePicture}
-                        alt={`${group.name} picture`}
-                        className={styles.groupCardPicture}
-                      />
-                    ) : (
-                      <span className={styles.groupCardPictureFallback}>No picture</span>
-                    )}
+                    <GroupPicture
+                      url={group.groupProfilePicture}
+                      alt={`${group.name} picture`}
+                      className={styles.groupCardPicture}
+                      fallback={<span className={styles.groupCardPictureFallback}>No picture</span>}
+                    />
                   </div>
                   <p className={styles.groupCardName}>{group.name}</p>
                   <p className={styles.groupCardMeta}>

@@ -47,11 +47,19 @@ function getCanvasCoords(canvas: HTMLCanvasElement, e: React.PointerEvent): [num
   ];
 }
 
-function drawAllStrokes(canvas: HTMLCanvasElement, strokes: DrawingStroke[]): void {
+function drawAllStrokes(
+  canvas: HTMLCanvasElement,
+  strokes: DrawingStroke[],
+  background: HTMLImageElement | null = null,
+): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (background) {
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+  }
 
   for (const stroke of strokes) {
     if (stroke.points.length === 0) continue;
@@ -85,6 +93,7 @@ export default function CanvasPage() {
 
   const [strokes, setStrokes] = useState<DrawingStroke[]>([]);
   const [joining, setJoining] = useState(true);
+  const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | null>(null);
   const [color, setColor] = useState("#1a1a1a");
   const [brushSize, setBrushSize] = useState(6);
   const [isEraser, setIsEraser] = useState(false);
@@ -104,8 +113,34 @@ export default function CanvasPage() {
 
   useEffect(() => {
     if (!canvasRef.current) return;
-    drawAllStrokes(canvasRef.current, strokes);
-  }, [strokes]);
+    drawAllStrokes(canvasRef.current, strokes, backgroundImage);
+  }, [strokes, backgroundImage]);
+
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    let cancelled = false;
+
+    fetch(`${getApiDomain()}/groups/${groupId}/profile-picture`, {
+      headers: { "Authorization": `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.blob() : null)
+      .then(blob => {
+        if (cancelled || !blob) return;
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          if (!cancelled) setBackgroundImage(img);
+        };
+        img.onerror = () => URL.revokeObjectURL(url);
+        img.src = url;
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [groupId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -284,7 +319,7 @@ export default function CanvasPage() {
       try {
         const api = new ApiService();
         await api.upload<{ image: string }>(`/groups/${groupId}/drawing/save`, form);
-        // backend broadcasts session:closed → onmessage redirects everyone
+        router.push(`/groups/${groupId}`);
       } catch {
         setIsSaving(false);
       }

@@ -9,6 +9,7 @@ import { ApiService } from "@/api/apiService";
 import { GroupDetails } from "@/types/group";
 import styles from "@/styles/page.module.css";
 import { PollResultMovie, PollResultsResponse } from "@/types/poll";
+import GroupPicture from "@/components/GroupPicture";
 
 export default function GroupOverview() {
   const params = useParams();
@@ -315,17 +316,16 @@ export default function GroupOverview() {
                       onMouseEnter={() => setPfpHint(pfpHints[Math.floor(Math.random() * pfpHints.length)])}
                       style={{ opacity: 1 }}
                     >
-                      {group.groupProfilePicture ? (
-                        <img
-                          src={group.groupProfilePicture}
-                          alt="Group profile picture"
-                          className={styles.groupProfilePicture}
-                        />
-                      ) : (
-                        <div className={styles.groupProfilePictureFallback}>
-                          <span>No picture</span>
-                        </div>
-                      )}
+                      <GroupPicture
+                        url={group.groupProfilePicture}
+                        alt="Group profile picture"
+                        className={styles.groupProfilePicture}
+                        fallback={
+                          <div className={styles.groupProfilePictureFallback}>
+                            <span>No picture</span>
+                          </div>
+                        }
+                      />
                       <div className={styles.groupProfilePictureOverlay}>
                         <span>{pfpHint}</span>
                       </div>
