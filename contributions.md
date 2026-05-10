@@ -143,8 +143,8 @@ reason).
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **@username1** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **@username1** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@fly-die** | 06.05.2026 | https://github.com/fabianbaechli/sopra-fs26-group-41-client/commit/86967564cd9f7462120e50a22632a196b5c25e81 | Created a how-it-works page to act as a guide for new users #44 | This was both requested in the Beta Testing feedback and our TA-Session. It makes it clearer for new users and users unfamiliar with Letterboxd. |
+| **@fly-die** | 09.05.2026 | https://github.com/fabianbaechli/sopra-fs26-group-41-client/commit/0317bd191db553164a92ea1fbb5e7a57644c64e7 | Major rework of around 5 files, changed Websocket logic to match backend, cleaner error messages (more user oriented), notification UI, Poll UI, and Group Overview UI (no issue to be linked). | Bug fixes and improvements are always relevant :) Spent around 5 hours cleaning my personal Bug-Database and worked my way through a lot of fixes. |
 | **@username2** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **@username2** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **@username3** | [date] | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
