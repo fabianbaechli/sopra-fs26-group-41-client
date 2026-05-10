@@ -36,6 +36,16 @@ type StrokeAppendedEvent = {
   points: [number, number][];
 };
 
+const PALETTE = ["#1a1a1a", "#e24531", "#4a90d9", "#2f7a32", "#f5c518", "#9b59b6", "#ffffff"];
+const SIZES = [2, 6, 14, 24];
+
+function getCanvasCoords(canvas: HTMLCanvasElement, e: React.PointerEvent): [number, number] {
+  const r = canvas.getBoundingClientRect();
+  return [
+    (e.clientX - r.left) * (canvas.width / r.width),
+    (e.clientY - r.top) * (canvas.height / r.height),
+  ];
+}
 
 function drawAllStrokes(canvas: HTMLCanvasElement, strokes: DrawingStroke[]): void {
   const ctx = canvas.getContext("2d");
@@ -75,21 +85,27 @@ export default function CanvasPage() {
 
   const [strokes, setStrokes] = useState<DrawingStroke[]>([]);
   const [joining, setJoining] = useState(true);
+  const [color, setColor] = useState("#1a1a1a");
+  const [brushSize, setBrushSize] = useState(6);
+  const [isEraser, setIsEraser] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionIdRef = useRef(sessionId);
+  const isDrawingRef = useRef(false);
+  const currentStrokeIdRef = useRef("");
+  const pendingPointsRef = useRef<[number, number][]>([]);
 
   useEffect(() => {
     sessionIdRef.current = sessionId;
   }, [sessionId]);
 
-
   useEffect(() => {
     if (!canvasRef.current) return;
     drawAllStrokes(canvasRef.current, strokes);
   }, [strokes]);
-
 
   useEffect(() => {
     let isMounted = true;
@@ -132,10 +148,8 @@ export default function CanvasPage() {
         reconnectTimerRef.current = setTimeout(() => {
           const t = localStorage.getItem("token");
           if (!t) return;
-          const wsBaseUrl = getApiDomain()
-            .replace(/^http:\/\//, "ws://")
-            .replace(/^https:\/\//, "wss://");
-          const newSocket = new WebSocket(`${wsBaseUrl}/ws?token=${t}`);
+          const wsBase = getApiDomain().replace(/^http:\/\//, "ws://").replace(/^https:\/\//, "wss://");
+          const newSocket = new WebSocket(`${wsBase}/ws?token=${t}`);
           socketRef.current = newSocket;
           newSocket.onmessage = socket.onmessage;
           newSocket.onclose = socket.onclose;
@@ -196,6 +210,87 @@ export default function CanvasPage() {
     };
   }, [sessionId, groupId, router]);
 
+  // Flush accumulated points to the server every 50 ms while drawing
+  useEffect(() => {
+    if (!sessionId) return;
+    const id = setInterval(() => {
+      if (!isDrawingRef.current || pendingPointsRef.current.length === 0) return;
+      const pts = pendingPointsRef.current.splice(0);
+      socketRef.current?.send(JSON.stringify({
+        type: "stroke", event: "append",
+        sessionId, strokeId: currentStrokeIdRef.current, points: pts,
+      }));
+    }, 50);
+    return () => clearInterval(id);
+  }, [sessionId]);
+
+  const drawColor = isEraser ? "#ffffff" : color;
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current || !sessionId) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+
+    const strokeId = crypto.randomUUID();
+    const point = getCanvasCoords(canvasRef.current, e);
+
+    isDrawingRef.current = true;
+    currentStrokeIdRef.current = strokeId;
+    pendingPointsRef.current = [];
+
+    setStrokes(prev => [...prev, {
+      strokeId, userId: -1, color: drawColor, width: brushSize, points: [point],
+    }]);
+
+    socketRef.current?.send(JSON.stringify({
+      type: "stroke", event: "start",
+      sessionId, strokeId, color: drawColor, width: brushSize, point,
+    }));
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawingRef.current || !canvasRef.current) return;
+    const point = getCanvasCoords(canvasRef.current, e);
+    pendingPointsRef.current.push(point);
+    setStrokes(prev => prev.map(s =>
+      s.strokeId === currentStrokeIdRef.current
+        ? { ...s, points: [...s.points, point] }
+        : s
+    ));
+  };
+
+  const finishStroke = () => {
+    if (!isDrawingRef.current || !sessionId) return;
+    isDrawingRef.current = false;
+    const strokeId = currentStrokeIdRef.current;
+    const pending = pendingPointsRef.current.splice(0);
+    if (pending.length > 0) {
+      socketRef.current?.send(JSON.stringify({
+        type: "stroke", event: "append", sessionId, strokeId, points: pending,
+      }));
+    }
+    socketRef.current?.send(JSON.stringify({
+      type: "stroke", event: "end", sessionId, strokeId,
+    }));
+  };
+
+  const handleSave = () => {
+    if (!canvasRef.current || !sessionId || isSaving) return;
+    setIsSaving(true);
+    canvasRef.current.toBlob(async (blob) => {
+      if (!blob) { setIsSaving(false); return; }
+      const form = new FormData();
+      form.append("sessionId", sessionId);
+      form.append("image", blob, "canvas.png");
+      try {
+        const api = new ApiService();
+        await api.upload<{ image: string }>(`/groups/${groupId}/drawing/save`, form);
+        // backend broadcasts session:closed → onmessage redirects everyone
+      } catch {
+        setIsSaving(false);
+      }
+    }, "image/png");
+  };
+
   if (joining) {
     return (
       <main className={styles.page}>
@@ -228,12 +323,85 @@ export default function CanvasPage() {
         <div className={styles.section}>
           <div className={`${styles.shellCard} ${styles.softCard}`} style={{ padding: "24px" }}>
             <h2 className={styles.sectionTitle} style={{ marginBottom: 16 }}>Group Canvas</h2>
+
+            {/* Toolbar */}
+            <div className={styles.canvasToolbar}>
+              <div className={styles.canvasPalette}>
+                {PALETTE.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => { setColor(c); setIsEraser(false); }}
+                    className={styles.colorSwatch}
+                    style={{
+                      backgroundColor: c,
+                      border: !isEraser && color === c
+                        ? "2px solid #fff4eb"
+                        : "2px solid rgba(255,244,235,0.2)",
+                    }}
+                  />
+                ))}
+                <input
+                  type="color"
+                  value={color}
+                  onChange={e => { setColor(e.target.value); setIsEraser(false); }}
+                  className={styles.colorPickerInput}
+                  title="Custom colour"
+                />
+              </div>
+
+              <div className={styles.canvasSizes}>
+                {SIZES.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setBrushSize(s)}
+                    className={styles.sizeButton}
+                    style={{
+                      border: brushSize === s
+                        ? "2px solid #fff4eb"
+                        : "2px solid rgba(255,244,235,0.2)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "block",
+                        width: s,
+                        height: s,
+                        borderRadius: "50%",
+                        background: "#fff4eb",
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <Button
+                className={styles.authButton}
+                onClick={() => setIsEraser(v => !v)}
+                style={isEraser ? { background: "#fff4eb", color: "#1a1a1a" } : undefined}
+              >
+                Eraser
+              </Button>
+
+              <Button
+                className={styles.authButton}
+                onClick={handleSave}
+                loading={isSaving}
+                style={{ marginLeft: "auto" }}
+              >
+                Save
+              </Button>
+            </div>
+
             <div className={styles.canvasWrap}>
               <canvas
                 ref={canvasRef}
                 width={512}
                 height={512}
                 className={styles.drawingCanvas}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={finishStroke}
+                onPointerLeave={finishStroke}
               />
             </div>
           </div>

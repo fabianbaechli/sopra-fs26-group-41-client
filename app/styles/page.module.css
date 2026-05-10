@@ -1987,7 +1987,7 @@
   border-color: rgba(255, 106, 85, 0.55);
 }
 
-/* ── Canvas page ─────────────────────────────────── */
+
 
 .canvasWrap {
   display: flex;
@@ -2003,4 +2003,68 @@
   background: #ffffff;
   touch-action: none;
   cursor: crosshair;
+}
+
+.canvasToolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.canvasPalette {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.colorSwatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform 0.1s;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.15);
+}
+
+.colorPickerInput {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 244, 235, 0.2);
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  overflow: hidden;
+}
+
+.canvasSizes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sizeButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 244, 235, 0.06);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.sizeButton:hover {
+  background: rgba(255, 244, 235, 0.14);
 }
