@@ -389,8 +389,8 @@ export default function PollPage() {
                   {overlaps[movie.movieId] !== undefined
                     ? `${overlaps[movie.movieId]}% match`
                     : movie.tasteOverlap !== undefined
-                    ? `${movie.tasteOverlap}% match`
-                    : "Taste Match N/A"}
+                      ? `${movie.tasteOverlap}% match`
+                      : "Taste Match N/A"}
                 </span>
               </div>
 

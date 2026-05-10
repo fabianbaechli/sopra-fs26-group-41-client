@@ -575,36 +575,39 @@ export default function GroupOverview() {
               <p className={styles.helperText}>No poll results available yet.</p>
             ) : (
               <div className={styles.groupRecommendationsList}>
-                {pollResults.slice(0, 3).map((movie, index) => (
-                  <Link
-                    key={movie.movieId}
-                    href={`/movies/${movie.movieId}`}
-                    className={styles.groupRecommendationLink}
-                  >
-                    <div className={`${styles.softCard} ${styles.groupRecommendationItem} ${styles.pollResultItemCompact}`}>
-                      <div
-                        className={`${styles.pollResultRankCompact} ${index === 0
-                          ? styles.pollResultRankGold
-                          : index === 1
-                            ? styles.pollResultRankSilver
-                            : styles.pollResultRankBronze
-                          }`}
-                      >
-                        {index + 1}
-                      </div>
+                {pollResults
+                  .filter((m, idx, arr) => arr.findIndex((x) => x.movieId === m.movieId) === idx)
+                  .slice(0, 3)
+                  .map((movie, index) => (
+                    <Link
+                      key={movie.movieId}
+                      href={`/movies/${movie.movieId}`}
+                      className={styles.groupRecommendationLink}
+                    >
+                      <div className={`${styles.softCard} ${styles.groupRecommendationItem} ${styles.pollResultItemCompact}`}>
+                        <div
+                          className={`${styles.pollResultRankCompact} ${index === 0
+                            ? styles.pollResultRankGold
+                            : index === 1
+                              ? styles.pollResultRankSilver
+                              : styles.pollResultRankBronze
+                            }`}
+                        >
+                          {index + 1}
+                        </div>
 
-                      <div className={styles.pollResultInfoCompact}>
-                        <p className={styles.groupRecommendationTitle}>{movie.title}</p>
-                      </div>
+                        <div className={styles.pollResultInfoCompact}>
+                          <p className={styles.groupRecommendationTitle}>{movie.title}</p>
+                        </div>
 
-                      <div className={styles.pollResultVotesCompact}>
-                        {movie.votes > 1 && <TeamOutlined />}
-                        {movie.votes === 1 && <UserOutlined />}
-                        <span>{movie.votes} vote{movie.votes !== 1 ? "s" : ""}</span>
+                        <div className={styles.pollResultVotesCompact}>
+                          {movie.votes > 1 && <TeamOutlined />}
+                          {movie.votes === 1 && <UserOutlined />}
+                          <span>{movie.votes} vote{movie.votes !== 1 ? "s" : ""}</span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
               </div>
             )}
           </div>
