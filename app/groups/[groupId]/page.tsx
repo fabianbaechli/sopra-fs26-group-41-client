@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button, Spin } from "antd";
 import { TeamOutlined, CopyOutlined, CheckOutlined, UserOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import { ApiService } from "@/api/apiService";
-import { GroupDetails, DrawingJoinResponse } from "@/types/group";
+import { GroupDetails } from "@/types/group";
 import styles from "@/styles/page.module.css";
 import { PollResultMovie, PollResultsResponse } from "@/types/poll";
 

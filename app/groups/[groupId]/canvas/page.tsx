@@ -4,16 +4,15 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getApiDomain } from "@/utils/domain";
 import { ApiService } from "@/api/apiService";
-import { DrawingJoinResponse } from "@/types/group";
-import { Button } from "antd";
+import { DrawingJoinResponse, DrawingStroke } from "@/types/group";
+import { Button, Spin } from "antd";
 import styles from "@/styles/page.module.css";
 
-type DrawingStroke = {
-  strokeId: string;
-  userId: number;
-  color: string;
-  width: number;
-  points: number[][];
+type DrawingStateEvent = {
+  type: "drawing";
+  event: "state";
+  sessionId: string;
+  drawingState: { strokes: DrawingStroke[] };
 };
 
 type DrawingStrokeEvent = {
@@ -31,8 +30,13 @@ export default function CanvasPage() {
   const sessionId = searchParams.get("sessionId");
 
   const [strokes, setStrokes] = useState<DrawingStroke[]>([]);
+  const [joining, setJoining] = useState(true);
   const socketRef = useRef<WebSocket | null>(null);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionIdRef = useRef(sessionId);
+
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   const sendStroke = (stroke: DrawingStroke) => {
     if (!sessionId) return;
@@ -48,13 +52,27 @@ export default function CanvasPage() {
     );
   };
 
+  // Always call join on mount to capture the current session's strokes.
+  // The backend uses computeIfAbsent so this is idempotent — the same session
+  // is returned for the group regardless of how many times join is called.
   useEffect(() => {
-    if (sessionId) return;
+    let isMounted = true;
     const api = new ApiService();
     api.get<DrawingJoinResponse>(`/groups/${groupId}/drawing/join`)
-      .then(res => router.replace(`/groups/${groupId}/canvas?sessionId=${encodeURIComponent(res.sessionId)}`))
-      .catch(() => router.replace(`/groups/${groupId}`));
-  }, [groupId, sessionId, router]);
+      .then(res => {
+        if (!isMounted) return;
+        setStrokes(res.drawingState?.strokes ?? []);
+        setJoining(false);
+        if (res.sessionId !== sessionIdRef.current) {
+          router.replace(`/groups/${groupId}/canvas?sessionId=${encodeURIComponent(res.sessionId)}`);
+        }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        router.replace(`/groups/${groupId}`);
+      });
+    return () => { isMounted = false; };
+  }, [groupId, router]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -92,16 +110,26 @@ export default function CanvasPage() {
     socket.onmessage = (event) => {
       try {
         const data: unknown = JSON.parse(event.data);
+        if (typeof data !== "object" || data === null) return;
 
-        if (
-          typeof data === "object" &&
-          data !== null &&
-          (data as DrawingStrokeEvent).type === "drawing" &&
-          (data as DrawingStrokeEvent).event === "stroke" &&
-          (data as DrawingStrokeEvent).sessionId === sessionId
-        ) {
+        const d = data as Record<string, unknown>;
+
+        // Full state sync sent by backend when a user joins an active session.
+        if (d.type === "drawing" && d.event === "state" && d.sessionId === sessionId) {
+          const ev = data as DrawingStateEvent;
+          setStrokes(ev.drawingState?.strokes ?? []);
+          return;
+        }
+
+        // Backend broadcasts this after a successful save — navigate everyone back.
+        if (d.type === "session" && d.event === "closed") {
+          router.push(`/groups/${groupId}`);
+          return;
+        }
+
+        // Placeholder for legacy/interim stroke events (replaced in Step 3).
+        if (d.type === "drawing" && d.event === "stroke" && d.sessionId === sessionId) {
           const strokeEvent = data as DrawingStrokeEvent;
-
           setStrokes((prev) => [...prev, strokeEvent.stroke]);
         }
       } catch { }
@@ -115,7 +143,19 @@ export default function CanvasPage() {
       socketRef.current?.close(1000);
       socketRef.current = null;
     };
-  }, [sessionId]);
+  }, [sessionId, groupId, router]);
+
+  if (joining) {
+    return (
+      <main className={styles.page}>
+        <div className={styles.content}>
+          <div className={styles.loadingWrap}>
+            <Spin size="large" />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.page}>
@@ -138,22 +178,13 @@ export default function CanvasPage() {
           <div className={`${styles.shellCard} ${styles.softCard}`} style={{ padding: "48px", textAlign: "center" }}>
             <h2 className={styles.sectionTitle}>Drawing Canvas</h2>
             <p className={styles.helperText} style={{ marginTop: 12 }}>
-              Live strokes: {strokes.length}
+              {strokes.length === 0 ? "Canvas is empty — ready to draw." : `${strokes.length} stroke${strokes.length !== 1 ? "s" : ""} loaded.`}
             </p>
             {sessionId && (
               <p className={styles.helperText} style={{ marginTop: 8, fontSize: 12 }}>
                 Session: {sessionId}
               </p>
             )}
-            <div style={{ marginTop: 24, textAlign: "left" }}>
-              {strokes.map((stroke) => (
-                <div key={stroke.strokeId} style={{ marginBottom: 8 }}>
-                  <span className={styles.helperText}>
-                    User {stroke.userId} drew {stroke.points.length} points
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
