@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/logo.png" alt="Movieblendr logo" width="80" />
+  <img src="public/logo.png" alt="Movieblendr logo" width="140" />
   <h1>Movieblendr.</h1>
   <p><strong>Find the movie your whole group actually wants to watch.</strong></p>
   <p>
