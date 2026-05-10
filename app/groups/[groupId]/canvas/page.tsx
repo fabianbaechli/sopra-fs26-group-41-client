@@ -15,12 +15,27 @@ type DrawingStateEvent = {
   drawingState: { strokes: DrawingStroke[] };
 };
 
-type DrawingStrokeEvent = {
-  type: "drawing";
-  event: "stroke";
+type StrokeStartedEvent = {
+  type: "stroke";
+  event: "started";
   sessionId: string;
-  stroke: DrawingStroke;
+  stroke: {
+    strokeId: string;
+    userId: number;
+    color: string;
+    width: number;
+    point: [number, number];
+  };
 };
+
+type StrokeAppendedEvent = {
+  type: "stroke";
+  event: "appended";
+  sessionId: string;
+  strokeId: string;
+  points: [number, number][];
+};
+
 
 function drawAllStrokes(canvas: HTMLCanvasElement, strokes: DrawingStroke[]): void {
   const ctx = canvas.getContext("2d");
@@ -146,10 +161,28 @@ export default function CanvasPage() {
           return;
         }
 
-        if (d.type === "drawing" && d.event === "stroke" && d.sessionId === sessionId) {
-          const strokeEvent = data as DrawingStrokeEvent;
-          setStrokes((prev) => [...prev, strokeEvent.stroke]);
+        if (d.type === "stroke" && d.event === "started" && d.sessionId === sessionId) {
+          const ev = data as StrokeStartedEvent;
+          setStrokes(prev => [...prev, {
+            strokeId: ev.stroke.strokeId,
+            userId: ev.stroke.userId,
+            color: ev.stroke.color,
+            width: ev.stroke.width,
+            points: [ev.stroke.point],
+          }]);
+          return;
         }
+
+        if (d.type === "stroke" && d.event === "appended" && d.sessionId === sessionId) {
+          const ev = data as StrokeAppendedEvent;
+          setStrokes(prev => prev.map(s =>
+            s.strokeId === ev.strokeId
+              ? { ...s, points: [...s.points, ...ev.points] }
+              : s
+          ));
+          return;
+        }
+
       } catch { }
     };
 
