@@ -62,6 +62,7 @@ export default function CanvasPage() {
   const [joining, setJoining] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionIdRef = useRef(sessionId);
 
   useEffect(() => {
