@@ -6,9 +6,10 @@ import Link from "next/link";
 import { Button, Spin } from "antd";
 import { TeamOutlined, CopyOutlined, CheckOutlined, UserOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import { ApiService } from "@/api/apiService";
-import { GroupDetails, DrawingJoinResponse } from "@/types/group";
+import { GroupDetails } from "@/types/group";
 import styles from "@/styles/page.module.css";
 import { PollResultMovie, PollResultsResponse } from "@/types/poll";
+import GroupPicture from "@/components/GroupPicture";
 
 export default function GroupOverview() {
   const params = useParams();
@@ -36,9 +37,6 @@ export default function GroupOverview() {
   const [pollError, setPollError] = useState<string | null>(null);
   const [pollOwnerMessage, setPollOwnerMessage] = useState<string | null>(null);
   const [isStartPollDialogOpen, setIsStartPollDialogOpen] = useState<boolean>(false);
-
-  const [joiningDrawingSession, setJoiningDrawingSession] = useState<boolean>(false);
-  const [drawingJoinError, setDrawingJoinError] = useState<string | null>(null);
 
   const pfpHints = ["You seem bored...", "Still watching?", "Up for something fun?"];
   const [pfpHint, setPfpHint] = useState(pfpHints[0]);
@@ -244,29 +242,8 @@ export default function GroupOverview() {
     }
   };
 
-  const handleJoinDrawingSession = async () => {
-    if (joiningDrawingSession) return;
-
-    setJoiningDrawingSession(true);
-    setDrawingJoinError(null);
-
-    try {
-      const api = new ApiService();
-      localStorage.setItem("suppressNotif", JSON.stringify({ type: "drawing", event: "started", ts: Date.now() }));
-      const response = await api.get<DrawingJoinResponse>(`/groups/${groupId}/drawing/join`);
-      router.push(`/groups/${groupId}/canvas?sessionId=${encodeURIComponent(response.sessionId)}`);
-    } catch (err: unknown) {
-      const apiError = err as { status?: number; message?: string };
-
-      if (apiError.status === 401) {
-        router.replace("/login");
-        return;
-      }
-
-      setDrawingJoinError("Could not join the drawing session. Please try again.");
-    } finally {
-      setJoiningDrawingSession(false);
-    }
+  const handleJoinDrawingSession = () => {
+    router.push(`/groups/${groupId}/canvas`);
   };
 
   const owner = group?.members.find((member) => member.id === group.ownerId);
@@ -337,28 +314,22 @@ export default function GroupOverview() {
                       className={styles.groupProfilePictureWrap}
                       onClick={handleJoinDrawingSession}
                       onMouseEnter={() => setPfpHint(pfpHints[Math.floor(Math.random() * pfpHints.length)])}
-                      style={{ opacity: joiningDrawingSession ? 0.6 : 1 }}
+                      style={{ opacity: 1 }}
                     >
-                      {group.groupProfilePicture ? (
-                        <img
-                          src={group.groupProfilePicture}
-                          alt="Group profile picture"
-                          className={styles.groupProfilePicture}
-                        />
-                      ) : (
-                        <div className={styles.groupProfilePictureFallback}>
-                          <span>No picture</span>
-                        </div>
-                      )}
+                      <GroupPicture
+                        url={group.groupProfilePicture}
+                        alt="Group profile picture"
+                        className={styles.groupProfilePicture}
+                        fallback={
+                          <div className={styles.groupProfilePictureFallback}>
+                            <span>No picture</span>
+                          </div>
+                        }
+                      />
                       <div className={styles.groupProfilePictureOverlay}>
-                        <span>{joiningDrawingSession ? "Joining..." : pfpHint}</span>
+                        <span>{pfpHint}</span>
                       </div>
                     </div>
-                    {drawingJoinError && (
-                      <p className={styles.helperText} style={{ color: "#e2a684", marginTop: 6 }}>
-                        {drawingJoinError}
-                      </p>
-                    )}
                   </div>
 
                   <div className={styles.groupSummaryInfo}>
