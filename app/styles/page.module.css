@@ -1900,7 +1900,7 @@
 
 .notifStack {
   position: fixed;
-  bottom: 28px;
+  top: 28px;
   right: 28px;
   z-index: 1000;
   display: flex;
@@ -1921,7 +1921,7 @@
 }
 
 @keyframes notifSlideIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 

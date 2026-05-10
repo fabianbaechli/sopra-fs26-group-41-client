@@ -55,7 +55,7 @@ export default function PollNotificationListener() {
     const timer = setTimeout(() => {
       notifTimers.current.delete(id);
       setNotifs(prev => prev.filter(x => x.id !== id));
-    }, 35000);
+    }, 120000);
     notifTimers.current.set(id, timer);
   }, []);
 
@@ -177,7 +177,7 @@ export default function PollNotificationListener() {
             <div className={styles.notifActions}>
               <button
                 className={styles.notifActionBtn}
-                onClick={() => { dismiss(n.id); routerRef.current.push(n.actionUrl!); }}
+                onClick={() => { dismiss(n.id); window.location.href = n.actionUrl!; }}
               >
                 {n.actionLabel}
               </button>
