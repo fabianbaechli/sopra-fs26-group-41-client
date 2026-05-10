@@ -396,25 +396,31 @@ export default function GroupOverview() {
             ) : (
               <div className={styles.groupRecommendationsList}>
                 {group.members.map((member) => (
-                  <div key={member.id} className={`${styles.softCard} ${styles.groupRecommendationItem}`}>
-                    <div className={styles.groupMemberHeader}>
-                      <div className={styles.groupMemberIdentityRow}>
-                        <p className={styles.groupMemberName}>{member.username}</p>
+                  <Link
+                    key={member.id}
+                    href={`/users/${member.id}`}
+                    className={styles.groupRecommendationLink}
+                  >
+                    <div className={`${styles.softCard} ${styles.groupRecommendationItem}`}>
+                      <div className={styles.groupMemberHeader}>
+                        <div className={styles.groupMemberIdentityRow}>
+                          <p className={styles.groupMemberName}>{member.username}</p>
 
-                        {currentUserId === member.id && (
-                          <span className={`${styles.genrePill} ${styles.groupMemberBadge} ${styles.groupYouBadge}`}>
-                            You
-                          </span>
-                        )}
+                          {currentUserId === member.id && (
+                            <span className={`${styles.genrePill} ${styles.groupMemberBadge} ${styles.groupYouBadge}`}>
+                              You
+                            </span>
+                          )}
 
-                        {group.ownerId === member.id && (
-                          <span className={`${styles.genrePill} ${styles.groupMemberBadge} ${styles.groupOwnerBadge}`}>
-                            Owner
-                          </span>
-                        )}
+                          {group.ownerId === member.id && (
+                            <span className={`${styles.genrePill} ${styles.groupMemberBadge} ${styles.groupOwnerBadge}`}>
+                              Owner
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
