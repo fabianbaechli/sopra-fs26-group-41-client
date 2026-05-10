@@ -1827,6 +1827,7 @@
   }
 }
 
+<<<<<<< HEAD
 .howItWorksFabWrap {
   position: fixed;
   left: 90px;
@@ -1985,4 +1986,22 @@
 .notifActionBtn:hover {
   background: rgba(255, 106, 85, 0.22);
   border-color: rgba(255, 106, 85, 0.55);
+=======
+/* ── Canvas page ─────────────────────────────────── */
+
+.canvasWrap {
+  display: flex;
+  justify-content: center;
+}
+
+.drawingCanvas {
+  display: block;
+  width: 100%;
+  max-width: 512px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: #ffffff;
+  touch-action: none;
+  cursor: crosshair;
+>>>>>>> 89da983 (Rendering committed strokes on HTML canvas element after joining the drawing session #39)
 }

@@ -22,6 +22,35 @@ type DrawingStrokeEvent = {
   stroke: DrawingStroke;
 };
 
+function drawAllStrokes(canvas: HTMLCanvasElement, strokes: DrawingStroke[]): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const stroke of strokes) {
+    if (stroke.points.length === 0) continue;
+
+    ctx.beginPath();
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.width;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+
+    if (stroke.points.length === 1) {
+      ctx.arc(stroke.points[0][0], stroke.points[0][1], stroke.width / 2, 0, Math.PI * 2);
+      ctx.fillStyle = stroke.color;
+      ctx.fill();
+    } else {
+      ctx.moveTo(stroke.points[0][0], stroke.points[0][1]);
+      for (let i = 1; i < stroke.points.length; i++) {
+        ctx.lineTo(stroke.points[i][0], stroke.points[i][1]);
+      }
+      ctx.stroke();
+    }
+  }
+}
+
 export default function CanvasPage() {
   const params = useParams();
   const router = useRouter();
@@ -31,6 +60,7 @@ export default function CanvasPage() {
 
   const [strokes, setStrokes] = useState<DrawingStroke[]>([]);
   const [joining, setJoining] = useState(true);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const sessionIdRef = useRef(sessionId);
 
@@ -38,23 +68,13 @@ export default function CanvasPage() {
     sessionIdRef.current = sessionId;
   }, [sessionId]);
 
-  const sendStroke = (stroke: DrawingStroke) => {
-    if (!sessionId) return;
-    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
 
-    socketRef.current.send(
-      JSON.stringify({
-        type: "drawing",
-        event: "stroke",
-        sessionId,
-        stroke,
-      })
-    );
-  };
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    drawAllStrokes(canvasRef.current, strokes);
+  }, [strokes]);
 
-  // Always call join on mount to capture the current session's strokes.
-  // The backend uses computeIfAbsent so this is idempotent — the same session
-  // is returned for the group regardless of how many times join is called.
+
   useEffect(() => {
     let isMounted = true;
     const api = new ApiService();
@@ -114,20 +134,17 @@ export default function CanvasPage() {
 
         const d = data as Record<string, unknown>;
 
-        // Full state sync sent by backend when a user joins an active session.
         if (d.type === "drawing" && d.event === "state" && d.sessionId === sessionId) {
           const ev = data as DrawingStateEvent;
           setStrokes(ev.drawingState?.strokes ?? []);
           return;
         }
 
-        // Backend broadcasts this after a successful save — navigate everyone back.
         if (d.type === "session" && d.event === "closed") {
           router.push(`/groups/${groupId}`);
           return;
         }
 
-        // Placeholder for legacy/interim stroke events (replaced in Step 3).
         if (d.type === "drawing" && d.event === "stroke" && d.sessionId === sessionId) {
           const strokeEvent = data as DrawingStrokeEvent;
           setStrokes((prev) => [...prev, strokeEvent.stroke]);
@@ -175,16 +192,16 @@ export default function CanvasPage() {
         </div>
 
         <div className={styles.section}>
-          <div className={`${styles.shellCard} ${styles.softCard}`} style={{ padding: "48px", textAlign: "center" }}>
-            <h2 className={styles.sectionTitle}>Drawing Canvas</h2>
-            <p className={styles.helperText} style={{ marginTop: 12 }}>
-              {strokes.length === 0 ? "Canvas is empty — ready to draw." : `${strokes.length} stroke${strokes.length !== 1 ? "s" : ""} loaded.`}
-            </p>
-            {sessionId && (
-              <p className={styles.helperText} style={{ marginTop: 8, fontSize: 12 }}>
-                Session: {sessionId}
-              </p>
-            )}
+          <div className={`${styles.shellCard} ${styles.softCard}`} style={{ padding: "24px" }}>
+            <h2 className={styles.sectionTitle} style={{ marginBottom: 16 }}>Group Canvas</h2>
+            <div className={styles.canvasWrap}>
+              <canvas
+                ref={canvasRef}
+                width={512}
+                height={512}
+                className={styles.drawingCanvas}
+              />
+            </div>
           </div>
         </div>
       </div>
