@@ -13,7 +13,7 @@ type Notif = {
   actionUrl?: string;
 };
 
-type PollStartedEvent    = { type: "poll";    event: "started";  message?: string; url?: string; };
+type PollStartedEvent    = { type: "poll";    event: "started";  message?: string; url?: string; groupId?: number; groupName?: string; };
 type PollFinishedEvent   = { type: "poll";    event: "finished"; pollId?: number; groupId?: number; pollResultsUrl?: string; };
 type DrawingStartedEvent = { type: "drawing"; event: "started";  groupId?: number; sessionId?: string; };
 
@@ -94,9 +94,22 @@ export default function PollNotificationListener() {
           if (shouldSuppress("poll", "started")) return;
           const pollData = data as PollStartedEvent;
           const url = typeof pollData.url === "string" ? pollData.url.trim() : "";
+
+          let groupLabel: string | null = null;
+          if (typeof pollData.groupName === "string" && pollData.groupName.trim()) {
+            groupLabel = pollData.groupName.trim();
+          } else if (typeof pollData.groupId === "number") {
+            groupLabel = `group ${pollData.groupId}`;
+          } else if (url) {
+            const match = url.match(/\/groups\/(\d+)/);
+            if (match) groupLabel = `group ${match[1]}`;
+          }
+
           addNotifRef.current({
             title: "Poll started",
-            body: pollData.message ?? "A new poll has started for your group.",
+            body: groupLabel
+              ? `A new poll has started in ${groupLabel}.`
+              : (pollData.message ?? "A new poll has started."),
             actionLabel: url ? "Join Poll" : undefined,
             actionUrl: url || undefined,
           });
@@ -114,7 +127,9 @@ export default function PollNotificationListener() {
           if (!redirectUrl) return;
           addNotifRef.current({
             title: "Poll finished",
-            body: "The group poll has finished. See what your group picked.",
+            body: typeof pollData.groupId === "number"
+              ? `The poll in group ${pollData.groupId} has finished. See what your group picked.`
+              : "The group poll has finished. See what your group picked.",
             actionLabel: "View Results",
             actionUrl: redirectUrl,
           });
@@ -132,7 +147,9 @@ export default function PollNotificationListener() {
             : null;
           addNotifRef.current({
             title: "Drawing session started",
-            body: "A drawing session has started for your group.",
+            body: groupId
+              ? `A drawing session has started in group ${groupId}.`
+              : "A drawing session has started.",
             actionLabel: canvasUrl ? "Open Canvas" : undefined,
             actionUrl: canvasUrl ?? undefined,
           });
