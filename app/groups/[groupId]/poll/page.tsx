@@ -40,7 +40,6 @@ export default function PollPage() {
   const [showReview, setShowReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
   const [overlaps, setOverlaps] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -239,7 +238,6 @@ export default function PollPage() {
       setSubmitError(null);
       const api = new ApiService();
       await api.post(`/groups/${groupId}/vote`, payload);
-      setSubmitted(true);
       router.push(backToGroup);
     } catch (err: unknown) {
       const status = (err as { status?: number }).status;
@@ -387,11 +385,13 @@ export default function PollPage() {
                 {movie.imdbRating !== undefined && (
                   <span className={styles.helperText}>⭐ {movie.imdbRating}</span>
                 )}
-                {(overlaps[movie.movieId] !== undefined || movie.tasteOverlap !== undefined) && (
-                  <span className={styles.helperText}>
-                    {overlaps[movie.movieId] ?? movie.tasteOverlap}% match
-                  </span>
-                )}
+                <span className={styles.helperText}>
+                  {overlaps[movie.movieId] !== undefined
+                    ? `${overlaps[movie.movieId]}% match`
+                    : movie.tasteOverlap !== undefined
+                    ? `${movie.tasteOverlap}% match`
+                    : "Taste Match N/A"}
+                </span>
               </div>
 
               {Array.isArray(movie.genres) && movie.genres.length > 0 && (

@@ -185,11 +185,11 @@ const MoviePage: React.FC = () => {
         </div>
       );
     }
-    if (overlapState.status === "error") {
+    if (overlapState.status === "error" || overlapState.status === "unavailable") {
       return (
         <div className={styles.section}>
           <div className={styles.tasteMatchBanner}>
-            <span className={styles.tasteMatchText}>Taste overlap unavailable.</span>
+            <span className={styles.tasteMatchText}>Taste overlap cannot be computed</span>
           </div>
         </div>
       );
