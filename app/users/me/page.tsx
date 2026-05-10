@@ -371,7 +371,7 @@ const Profile: React.FC = () => {
                     <li>Go to <a href="https://letterboxd.com/settings/data/" target="_blank" rel="noopener noreferrer" className={styles.externalLink}>Letterboxd Data Settings</a></li>
                     <li>Download your account export (ZIP)</li>
                     <li>Upload the <strong>entire downloaded .zip file</strong> here</li>
-                    <li>Only your <strong>rated movies</strong> are analyzed — diary entries, watchlist, and liked films are not used</li>
+                    <li>Only your <strong>rated movies</strong> are analyzed. Diary entries, watchlist, and liked films are not used in our calculations.</li>
                   </ul>
                 </div>
 
