@@ -7,10 +7,10 @@
     <a href="https://github.com/fabianbaechli/sopra-fs26-group-41-server">Server</a>
   </p>
   <p>
-    <a href="https://github.com/fly-die"><img src="https://github.com/fly-die.png" width="60" style="border-radius:50%" alt="fly-die" /></a>
-    <a href="https://github.com/fabianbaechli"><img src="https://github.com/fabianbaechli.png" width="60" style="border-radius:50%" alt="fabianbaechli" /></a>
-    <a href="https://github.com/BB8006"><img src="https://github.com/BB8006.png" width="60" style="border-radius:50%" alt="BB8006" /></a>
-    <a href="https://github.com/EmritoHeltar"><img src="https://github.com/EmritoHeltar.png" width="60" style="border-radius:50%" alt="EmritoHeltar" /></a>
+    <a href="https://github.com/fly-die"><img src="https://wsrv.nl/?url=https://github.com/fly-die.png&mask=circle&w=60&h=60" width="60" alt="fly-die" /></a>
+    <a href="https://github.com/fabianbaechli"><img src="https://wsrv.nl/?url=https://github.com/fabianbaechli.png&mask=circle&w=60&h=60" width="60" alt="fabianbaechli" /></a>
+    <a href="https://github.com/BB8006"><img src="https://wsrv.nl/?url=https://github.com/BB8006.png&mask=circle&w=60&h=60" width="60" alt="BB8006" /></a>
+    <a href="https://github.com/EmritoHeltar"><img src="https://wsrv.nl/?url=https://github.com/EmritoHeltar.png&mask=circle&w=60&h=60" width="60" alt="EmritoHeltar" /></a>
   </p>
 </div>
 
