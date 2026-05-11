@@ -121,6 +121,7 @@ export default function UserProfilePage() {
         <div className={styles.content}>
           <div className={styles.loadingWrap}>
             <Spin size="large" />
+            <p className={styles.helperText}>Computing your taste overlap...</p>
           </div>
         </div>
       </div>
@@ -150,13 +151,7 @@ export default function UserProfilePage() {
           <div className={styles.heroLeft}>
             <Link href="/users/me" style={{ textDecoration: "none", color: "inherit" }}>
               <div className={styles.brandRow}>
-                <Image
-                  src="/logo.png"
-                  alt="logo"
-                  width={52}
-                  height={52}
-                  className={styles.logo}
-                />
+                <img src="/logo.png" alt="logo" className={styles.logo} />
                 <Title level={1} className={styles.brand}>
                   Movieblendr.
                 </Title>
@@ -197,15 +192,15 @@ export default function UserProfilePage() {
               ) : typeof tasteOverlap === "number" ? (
                 <>
                   <div className={styles.statusRow}>
-                    <Title level={2} className={styles.connected} style={{ color: "#3fb00ead" }}>
+                    <Title level={2} className={`${styles.connected} ${styles.overlapValue}`}>
                       {tasteOverlap}%
                     </Title>
-                    <Text className={styles.helperText} style={{ marginLeft: "10px", marginTop: "15px" }}>
+                    <Text className={`${styles.helperText} ${styles.overlapSideText}`}>
                       {tasteOverlap === 100 ? "Look at that, you're you!" : "with you"}
                     </Text>
                   </div>
                   {tasteOverlap !== 100 && (
-                    <Text className={styles.helperText} style={{ marginTop: "8px", display: "block" }}>
+                    <Text className={`${styles.helperText} ${styles.overlapSubText}`}>
                       Based on shared movies and rating patterns
                     </Text>
                   )}

@@ -969,6 +969,20 @@
   line-height: 1;
 }
 
+.overlapValue {
+  color: #86fd80 !important;
+}
+
+.overlapSideText {
+  margin-left: 10px;
+  margin-top: 15px;
+}
+
+.overlapSubText {
+  margin-top: 8px;
+  display: block;
+}
+
 .directorText {
   color: #fff4eb !important;
   font-size: 16px;
