@@ -116,8 +116,6 @@ This runs the TypeScript compiler without emitting files. Any type errors will b
 
 ## How it works, main user flows
 
-# TODO: Include 2-3 Screenshots
-
 ### Onboarding
 
 1. Register an account and log in.
