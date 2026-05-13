@@ -50,6 +50,7 @@ next-env.d.ts
 # Optional npm cache directory
 .npm
 
+
 # Optional eslint cache
 .eslintcache
 
@@ -136,4 +137,3 @@ yarn-error.log*
 # misc
 .DS_Store
 *.pem
-.claude/
