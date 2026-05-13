@@ -30,7 +30,7 @@ Each member connects their [Letterboxd](https://letterboxd.com) history to build
 |---|---|
 | Framework | [Next.js](https://nextjs.org)|
 | Languages | TypeScript, JS |
-| UI | [Ant Design](https://ant.design) + CSS |
+| UI | CSS |
 | Runtime | Node.js|
 | Deployment | Vercel |
 
@@ -39,15 +39,19 @@ Each member connects their [Letterboxd](https://letterboxd.com) history to build
 ## High-level components
 
 ### 1. [User profile & Letterboxd import](app/users/me/page.tsx)
+<img src="public/users:me.png" alt="users/me page"/>
 The entry point for personalisation. Users upload their Letterboxd data export (a ZIP file), which the server processes into a taste profile. Without this step the recommendation engine has nothing to work with, so everything else in the app depends on it.
 
 ### 2. [Group hub](app/groups/%5BgroupId%5D/page.tsx)
+<img src="public/:groups:{groupId}.png" alt="groups/{groupId} page"/>
 The main coordination screen for a group. Shows the group's aggregated recommendations (ranked by how well they match the whole group's taste), lets the owner start a poll, displays poll results, and links to the collaborative drawing canvas. This is where members spend most of their time.
 
 ### 3. [Poll flow](app/groups/%5BgroupId%5D/poll/page.tsx)
+<img src="public/:groups:{groupId}:poll.png" alt="groups/{groupId}/poll page"/>
 A swipe-style voting interface. Each member works through the recommended movies one by one (yes / no), reviews their answers, and submits. Once all members have voted the results appear on the group hub automatically.
 
 ### 4. [Real-time notification listener](app/components/PollNotificationListener.tsx)
+<img src="public/Poll Notification Example.png" alt="Example of a notification popping up"/>
 A global WebSocket client that lives in the app layout and broadcasts in-app notifications to every member when a poll starts, a poll finishes, or a collaborative drawing session opens. Keeps the group in sync without anyone having to refresh the page.
 
 ---
