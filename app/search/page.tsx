@@ -3,6 +3,7 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, Spin, Typography, Button, Input } from "antd";
+import { VideoCameraOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import type { MovieSearchDTO, MovieSearchResponse } from "@/types/movie";
@@ -107,8 +108,8 @@ const SearchResultsContent: React.FC = () => {
                     className={styles.moviePoster}
                   />
                 ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8f6d60' }}>
-                    No Poster
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <VideoCameraOutlined style={{ fontSize: 28, color: "#8f6d60" }} />
                   </div>
                 )}
               </div>
