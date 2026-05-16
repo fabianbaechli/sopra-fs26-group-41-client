@@ -245,7 +245,7 @@ export default function CanvasPage() {
     };
   }, [sessionId, groupId, router]);
 
-  // Flush accumulated points to the server every 50 ms while drawing
+
   useEffect(() => {
     if (!sessionId) return;
     const id = setInterval(() => {
