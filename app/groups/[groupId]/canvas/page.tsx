@@ -97,6 +97,7 @@ export default function CanvasPage() {
   const [color, setColor] = useState("#1a1a1a");
   const [brushSize, setBrushSize] = useState(6);
   const [isEraser, setIsEraser] = useState(false);
+  const [isFilling, setIsFilling] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -263,6 +264,7 @@ export default function CanvasPage() {
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || !sessionId) return;
+    if (isFilling) { handleBucketFill(); return; }
     e.currentTarget.setPointerCapture(e.pointerId);
 
     const strokeId = crypto.randomUUID();
@@ -306,6 +308,30 @@ export default function CanvasPage() {
     socketRef.current?.send(JSON.stringify({
       type: "stroke", event: "end", sessionId, strokeId,
     }));
+  };
+
+  const handleBucketFill = () => {
+    if (!sessionId) return;
+
+    const fillColor = color;
+    const canvasSize = 512;
+    const fillWidth = 14;
+    const fillStep = 12;
+    const newStrokes: DrawingStroke[] = [];
+
+    for (let y = fillWidth / 2; y <= canvasSize + fillWidth / 2; y += fillStep) {
+      const strokeId = crypto.randomUUID();
+      const start: [number, number] = [0, y];
+      const end: [number, number] = [canvasSize, y];
+
+      newStrokes.push({ strokeId, userId: -1, color: fillColor, width: fillWidth, points: [start, end] });
+
+      socketRef.current?.send(JSON.stringify({ type: "stroke", event: "start", sessionId, strokeId, color: fillColor, width: fillWidth, point: start }));
+      socketRef.current?.send(JSON.stringify({ type: "stroke", event: "append", sessionId, strokeId, points: [end] }));
+      socketRef.current?.send(JSON.stringify({ type: "stroke", event: "end", sessionId, strokeId }));
+    }
+
+    setStrokes(prev => [...prev, ...newStrokes]);
   };
 
   const handleSave = () => {
@@ -407,15 +433,27 @@ export default function CanvasPage() {
                     />
                   </button>
                 ))}
-              </div>
 
-              <Button
-                className={styles.authButton}
-                onClick={() => setIsEraser(v => !v)}
-                style={isEraser ? { background: "#fff4eb", color: "#1a1a1a" } : undefined}
-              >
-                Eraser
-              </Button>
+                <button
+                  className={styles.sizeButton}
+                  onClick={() => { setIsFilling(v => !v); setIsEraser(false); }}
+                  style={{ border: isFilling ? "2px solid #fff4eb" : "2px solid rgba(255,244,235,0.2)" }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff4eb" width="18" height="18" style={{ marginTop: "4px" }}>
+                    <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 0 0 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z" />
+                  </svg>
+                </button>
+
+                <button
+                  className={styles.sizeButton}
+                  onClick={() => { setIsEraser(v => !v); setIsFilling(false); }}
+                  style={{ border: isEraser ? "2px solid #fff4eb" : "2px solid rgba(255,244,235,0.2)" }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff4eb" width="18" height="18">
+                    <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0zM4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-4.95-4.95-4.95 4.95z" />
+                  </svg>
+                </button>
+              </div>
 
               <Button
                 className={styles.authButton}
