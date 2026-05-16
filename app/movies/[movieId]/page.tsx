@@ -272,11 +272,20 @@ const MoviePage: React.FC = () => {
           <div className={styles.movieLayout}>
             <div>
               {hasPoster ? (
-                <img
-                  src={movie.posterUrl}
-                  alt={`${movie.title} poster`}
-                  className={styles.moviePoster}
-                />
+                <>
+                  <img
+                    src={movie.posterUrl}
+                    alt={`${movie.title} poster`}
+                    className={styles.moviePoster}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
+                    }}
+                  />
+                  <div className={styles.posterFallback} style={{ display: "none" }}>
+                    <VideoCameraOutlined style={{ fontSize: 40, color: "#8f6d60" }} />
+                  </div>
+                </>
               ) : (
                 <div className={styles.posterFallback}>
                   <VideoCameraOutlined style={{ fontSize: 40, color: "#8f6d60" }} />

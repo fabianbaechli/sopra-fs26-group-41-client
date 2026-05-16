@@ -102,13 +102,22 @@ const SearchResultsContent: React.FC = () => {
             >
               <div className={styles.moviePosterWrap}>
                 {movie.posterUrl && movie.posterUrl !== "N/A" ? (
-                  <img
-                    src={movie.posterUrl}
-                    alt={`${movie.title} poster`}
-                    className={styles.moviePoster}
-                  />
+                  <>
+                    <img
+                      src={movie.posterUrl}
+                      alt={`${movie.title} poster`}
+                      className={styles.moviePoster}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
+                      }}
+                    />
+                    <div style={{ display: "none", width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}>
+                      <VideoCameraOutlined style={{ fontSize: 28, color: "#8f6d60" }} />
+                    </div>
+                  </>
                 ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <VideoCameraOutlined style={{ fontSize: 28, color: "#8f6d60" }} />
                   </div>
                 )}

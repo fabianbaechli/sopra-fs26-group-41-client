@@ -286,8 +286,25 @@ export default function PollPage() {
                 return (
                   <div key={m.movieId} className={`${styles.softCard} ${styles.pollReviewItem}`}>
                     <div className={styles.pollReviewItemLeft}>
-                      {m.posterUrl && (
-                        <img src={m.posterUrl} alt={m.title} className={styles.pollReviewPoster} />
+                      {m.posterUrl ? (
+                        <>
+                          <img
+                            src={m.posterUrl}
+                            alt={m.title}
+                            className={styles.pollReviewPoster}
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
+                            }}
+                          />
+                          <div style={{ display: "none", width: 44, minWidth: 44, aspectRatio: "2/3", borderRadius: 6, alignItems: "center", justifyContent: "center", background: "rgba(255,244,235,0.06)" }}>
+                            <VideoCameraOutlined style={{ fontSize: 20, color: "#8f6d60" }} />
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ display: "flex", width: 44, minWidth: 44, aspectRatio: "2/3", borderRadius: 6, alignItems: "center", justifyContent: "center", background: "rgba(255,244,235,0.06)" }}>
+                          <VideoCameraOutlined style={{ fontSize: 20, color: "#8f6d60" }} />
+                        </div>
                       )}
                       <div style={{ minWidth: 0 }}>
                         <p className={styles.groupRecommendationTitle}>{m.title}</p>
@@ -365,7 +382,20 @@ export default function PollPage() {
 
           <div className={styles.pollMovieLayout}>
             {movie.posterUrl ? (
-              <img src={movie.posterUrl} alt={movie.title} className={styles.pollPoster} />
+              <>
+                <img
+                  src={movie.posterUrl}
+                  alt={movie.title}
+                  className={styles.pollPoster}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
+                  }}
+                />
+                <div className={styles.pollPosterFallback} style={{ display: "none" }}>
+                  <VideoCameraOutlined style={{ fontSize: 28, color: "#8f6d60" }} />
+                </div>
+              </>
             ) : (
               <div className={styles.pollPosterFallback}>
                 <VideoCameraOutlined style={{ fontSize: 28, color: "#8f6d60" }} />
