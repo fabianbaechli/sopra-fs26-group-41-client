@@ -525,7 +525,7 @@ export default function GroupOverview() {
             )}
           </div>
         </div>
-        <div className={styles.section}>
+        <div id="poll-results" className={styles.section}>
           <div className={`${styles.shellCard} ${styles.softCard} ${styles.groupRecommendationsCard}`}>
             <div className={styles.groupSectionHeader}>
               <h2 className={styles.sectionTitle}>Poll Results</h2>

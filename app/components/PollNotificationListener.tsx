@@ -120,9 +120,9 @@ export default function PollNotificationListener() {
           const pollData = data as PollFinishedEvent;
           let redirectUrl: string | null = null;
           if (typeof pollData.pollResultsUrl === "string" && pollData.pollResultsUrl.trim()) {
-            redirectUrl = pollData.pollResultsUrl.trim();
+            redirectUrl = pollData.pollResultsUrl.trim() + "#poll-results";
           } else if (typeof pollData.groupId === "number") {
-            redirectUrl = `/groups/${pollData.groupId}`;
+            redirectUrl = `/groups/${pollData.groupId}#poll-results`;
           }
           if (!redirectUrl) return;
           addNotifRef.current({
