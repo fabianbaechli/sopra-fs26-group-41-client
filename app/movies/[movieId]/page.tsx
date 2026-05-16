@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Input, Spin, Typography } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { UserOutlined, VideoCameraOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import type { MovieDetails } from "@/types/movie";
@@ -278,7 +278,9 @@ const MoviePage: React.FC = () => {
                   className={styles.moviePoster}
                 />
               ) : (
-                <div className={styles.posterFallback}>No poster available</div>
+                <div className={styles.posterFallback}>
+                  <VideoCameraOutlined style={{ fontSize: 40, color: "#8f6d60" }} />
+                </div>
               )}
             </div>
 

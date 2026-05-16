@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Spin } from "antd";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseOutlined, VideoCameraOutlined } from "@ant-design/icons";
 import { ApiService } from "@/api/apiService";
 import styles from "@/styles/page.module.css";
 
@@ -368,7 +368,7 @@ export default function PollPage() {
               <img src={movie.posterUrl} alt={movie.title} className={styles.pollPoster} />
             ) : (
               <div className={styles.pollPosterFallback}>
-                <span className={styles.helperText} style={{ fontSize: 13 }}>No poster</span>
+                <VideoCameraOutlined style={{ fontSize: 28, color: "#8f6d60" }} />
               </div>
             )}
 
