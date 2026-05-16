@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { Button, Card, Spin, Typography } from "antd";
 import { TeamOutlined } from "@ant-design/icons";
@@ -36,7 +35,7 @@ export default function UserProfilePage() {
     let isMounted = true;
 
     const fetchProfile = async () => {
-      const redirectedToOwnProfile = false;
+      let redirectedToOwnProfile = false;
 
       try {
         setLoading(true);
@@ -49,6 +48,7 @@ export default function UserProfilePage() {
           const me = await api.get<UserProfile>("/users/me");
 
           if (me.id === Number(userId)) {
+            redirectedToOwnProfile = true;
             if (isMounted) {
               setProfile({
                 id: me.id,

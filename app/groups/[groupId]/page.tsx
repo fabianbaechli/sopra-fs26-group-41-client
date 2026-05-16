@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Spin } from "antd";
@@ -37,6 +37,8 @@ export default function GroupOverview() {
   const [pollError, setPollError] = useState<string | null>(null);
   const [pollOwnerMessage, setPollOwnerMessage] = useState<string | null>(null);
   const [isStartPollDialogOpen, setIsStartPollDialogOpen] = useState<boolean>(false);
+
+  const pollErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const pfpHints = ["You seem bored...", "Still watching?", "Up for something fun?"];
   const [pfpHint, setPfpHint] = useState(pfpHints[0]);
@@ -167,6 +169,7 @@ export default function GroupOverview() {
 
     return () => {
       isMounted = false;
+      if (pollErrorTimerRef.current) clearTimeout(pollErrorTimerRef.current);
     };
   }, [groupId, router]);
 
@@ -219,24 +222,27 @@ export default function GroupOverview() {
         return;
       }
 
+      const setPollErrorTimed = (msg: string) => {
+        setPollError(msg);
+        if (pollErrorTimerRef.current) clearTimeout(pollErrorTimerRef.current);
+        pollErrorTimerRef.current = setTimeout(() => setPollError(null), 7000);
+      };
+
       if (status === 403) {
-        setPollError("You are not allowed to start a poll for this group.");
-        window.setTimeout(() => setPollError(null), 7000);
+        setPollErrorTimed("You are not allowed to start a poll for this group.");
         return;
       }
 
       if (status === 409) {
-        setPollError(
+        setPollErrorTimed(
           recommendationsError
             ? "A poll cannot be started yet. Group members need to upload Letterboxd data first."
             : "A poll is already running."
         );
-        window.setTimeout(() => setPollError(null), 7000);
         return;
       }
 
-      setPollError("Failed to start poll.");
-      window.setTimeout(() => setPollError(null), 7000);
+      setPollErrorTimed("Failed to start poll.");
     } finally {
       setStartingPoll(false);
     }
