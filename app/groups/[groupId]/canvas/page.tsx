@@ -6,6 +6,7 @@ import { getApiDomain } from "@/utils/domain";
 import { ApiService } from "@/api/apiService";
 import { DrawingJoinResponse, DrawingStroke } from "@/types/group";
 import { Button, Spin } from "antd";
+import FormatColorFillIcon from "@mui/icons-material/FormatColorFill";
 import styles from "@/styles/page.module.css";
 
 type DrawingStateEvent = {
@@ -439,9 +440,7 @@ export default function CanvasPage() {
                   onClick={() => { setIsFilling(v => !v); setIsEraser(false); }}
                   style={{ border: isFilling ? "2px solid #fff4eb" : "2px solid rgba(255,244,235,0.2)" }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff4eb" width="18" height="18" style={{ marginTop: "4px" }}>
-                    <path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15a1.49 1.49 0 0 0 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z" />
-                  </svg>
+                  <FormatColorFillIcon sx={{ fontSize: 18, color: "#fff4eb" }} />
                 </button>
 
                 <button
@@ -449,8 +448,8 @@ export default function CanvasPage() {
                   onClick={() => { setIsEraser(v => !v); setIsFilling(false); }}
                   style={{ border: isEraser ? "2px solid #fff4eb" : "2px solid rgba(255,244,235,0.2)" }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff4eb" width="18" height="18">
-                    <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0zM4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-4.95-4.95-4.95 4.95z" />
+                  <svg viewBox="0 0 508.013 508.013" fill="#fff4eb" width="18" height="18">
+                    <path d="M490.3,133.177l-99.5-99.6c-33-33-74-11.4-85.5,0l-287.6,287.7c-23.6,23.6-23.6,61.9,0,85.5l81.1,81.1c2.6,2.6,6.2,4.1,10,4.1h102.4c3.7,0,7.3-1.5,10-4.1l269.2-269.2C513.9,195.077,513.9,156.777,490.3,133.177z M205.3,463.777h-90.7l-77-77c-12.6-12.6-12.6-33,0-45.5l67.4-67.4l145.1,145.1L205.3,463.777z M470.4,198.677l-200.3,200.3L125,253.877l200.3-200.3c6.1-6.1,27-18.5,45.5,0l99.5,99.5C482.9,165.777,482.9,186.177,470.4,198.677z" />
                   </svg>
                 </button>
               </div>
