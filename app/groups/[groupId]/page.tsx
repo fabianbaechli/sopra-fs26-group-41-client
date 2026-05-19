@@ -34,7 +34,7 @@ export default function GroupOverview() {
   const [pollResultsError, setPollResultsError] = useState<string | null>(null);
 
   const [overlap, setOverlap] = useState<number | null>(null);
-  const [overlapLoading, setOverlapLoading] = useState<boolean>(false);
+  const [overlapLoading, setOverlapLoading] = useState<boolean>(true);
   const [overlapError, setOverlapError] = useState<string | null>(null);
 
   const [startingPoll, setStartingPoll] = useState(false);
