@@ -1325,9 +1325,14 @@
 }
 
 .groupMatchCard {
-  padding: 20px;
-  min-width: 220px;
-  flex: 0 1 240px;
+  padding: 20px 24px;
+  min-width: 160px;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   border: 1px solid rgba(220, 89, 66, 0.2);
   background: linear-gradient(180deg, rgba(30, 25, 22, 0.96) 0%, rgba(31, 27, 25, 0.98) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
@@ -1335,7 +1340,7 @@
 
 .groupMatchValue {
   font-size: 30px;
-  margin-bottom: 10px;
+  margin: 4px 0 0;
   color: #86fd80;
 }
 
