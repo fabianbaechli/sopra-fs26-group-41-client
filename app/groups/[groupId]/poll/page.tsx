@@ -416,11 +416,11 @@ export default function PollPage() {
                   <span className={styles.helperText}>⭐ {movie.imdbRating}</span>
                 )}
                 <span className={styles.helperText}>
-                  {overlaps[movie.movieId] !== undefined
+                  {typeof overlaps[movie.movieId] === "number"
                     ? `${overlaps[movie.movieId]}% match`
-                    : movie.tasteOverlap !== undefined
+                    : typeof movie.tasteOverlap === "number"
                       ? `${movie.tasteOverlap}% match`
-                      : "Taste Match N/A"}
+                      : "Overlap can't be computed"}
                 </span>
               </div>
 

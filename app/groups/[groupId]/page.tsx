@@ -34,7 +34,7 @@ export default function GroupOverview() {
   const [pollResultsError, setPollResultsError] = useState<string | null>(null);
 
   const [overlap, setOverlap] = useState<number | null>(null);
-  const [overlapLoading, setOverlapLoading] = useState<boolean>(true);
+  const [overlapLoading, setOverlapLoading] = useState<boolean>(false);
   const [overlapError, setOverlapError] = useState<string | null>(null);
 
   const [startingPoll, setStartingPoll] = useState(false);
@@ -65,6 +65,7 @@ export default function GroupOverview() {
           setError(null);
           setLoading(false);
           setRecommendationsLoading(true);
+          setOverlapLoading(true);
         }
         try {
           const meData = await api.get<unknown>(`/users/me`);
