@@ -84,6 +84,8 @@ export default function GroupOverview() {
           }
         }
 
+        let noLetterboxdData = false;
+
         try {
           const recData = await api.get<unknown>(`/groups/${groupId}/recommendations`);
           const recommendationData = recData as { recommendations?: unknown[] };
@@ -108,6 +110,7 @@ export default function GroupOverview() {
             if (apiError.status === 403) {
               setRecommendationsError("You are not allowed to view this group's recommendations.");
             } else if (apiError.status === 409) {
+              noLetterboxdData = true;
               setRecommendationsError(
                 "Recommendations are not ready yet. Group members need to upload Letterboxd data first."
               );
@@ -134,8 +137,12 @@ export default function GroupOverview() {
             const overlapData = await api.get<{ Overlap: number }>(`/groups/${groupId}/overlap`);
 
             if (isMounted) {
-              setOverlap(overlapData.Overlap ?? null);
-              setOverlapError(null);
+              if (overlapData.Overlap === 0 && noLetterboxdData) {
+                setOverlapError("Not enough members have uploaded Letterboxd data yet.");
+              } else {
+                setOverlap(overlapData.Overlap ?? null);
+                setOverlapError(null);
+              }
             }
           }
         } catch (err: unknown) {
