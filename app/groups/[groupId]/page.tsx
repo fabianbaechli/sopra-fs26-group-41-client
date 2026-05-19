@@ -400,7 +400,7 @@ export default function GroupOverview() {
                   <Spin size="small" />
                 ) : (
                   <p className={`${styles.username} ${styles.groupMatchValue}`}>
-                    {overlap !== null ? `${overlap}%` : "N/A"}
+                    {overlap != null ? `${overlap}%` : "N/A"}
                   </p>
                 )}
                 {!overlapLoading && overlapError && (
