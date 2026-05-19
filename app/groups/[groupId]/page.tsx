@@ -33,6 +33,10 @@ export default function GroupOverview() {
   const [pollResultsLoading, setPollResultsLoading] = useState<boolean>(false);
   const [pollResultsError, setPollResultsError] = useState<string | null>(null);
 
+  const [overlap, setOverlap] = useState<number | null>(null);
+  const [overlapLoading, setOverlapLoading] = useState<boolean>(false);
+  const [overlapError, setOverlapError] = useState<string | null>(null);
+
   const [startingPoll, setStartingPoll] = useState(false);
   const [pollError, setPollError] = useState<string | null>(null);
   const [pollOwnerMessage, setPollOwnerMessage] = useState<string | null>(null);
@@ -107,6 +111,41 @@ export default function GroupOverview() {
             } else {
               setRecommendationsError("Failed to load recommendations. Please try again later.");
             }
+          }
+        }
+
+        try {
+          if (isMounted) {
+            setOverlapLoading(true);
+          }
+
+          const overlapData = await api.get<{ overlap: number }>(`/groups/${groupId}/overlap`);
+
+          if (isMounted) {
+            setOverlap(overlapData.overlap);
+            setOverlapError(null);
+          }
+        } catch (err: unknown) {
+          if (isMounted) {
+            const apiError = err as { status?: number };
+            setOverlap(null);
+
+            if (apiError.status === 401) {
+              router.replace("/login");
+              return;
+            }
+
+            if (apiError.status === 409) {
+              setOverlapError("Not enough members have uploaded Letterboxd data yet.");
+            } else if (apiError.status === 403) {
+              setOverlapError("You are not allowed to view this group's match.");
+            } else {
+              setOverlapError("Group match is not available yet.");
+            }
+          }
+        } finally {
+          if (isMounted) {
+            setOverlapLoading(false);
           }
         }
 
@@ -254,9 +293,6 @@ export default function GroupOverview() {
 
   const owner = group?.members.find((member) => member.id === group.ownerId);
 
-  const groupMatchReason = group && group.members.length < 2
-    ? "Need at least 2 members to compare taste profiles."
-    : "No group match yet because not enough members have uploaded Letterboxd data.";
 
 
   if (loading) {
@@ -360,13 +396,18 @@ export default function GroupOverview() {
 
               <div className={`${styles.shellCard} ${styles.softCard} ${styles.groupMatchCard}`}>
                 <p className={styles.label}>Group Match</p>
-                <p className={`${styles.username} ${styles.groupMatchValue}`}>
-                  {/* Temporary buffer for when we'll implement GroupMatch later on */}
-                  N/A
-                </p>
-                <p className={`${styles.helperText} ${styles.groupMatchReason}`}>
-                  {groupMatchReason}
-                </p>
+                {overlapLoading ? (
+                  <Spin size="small" />
+                ) : (
+                  <p className={`${styles.username} ${styles.groupMatchValue}`}>
+                    {overlap !== null ? `${overlap}%` : "N/A"}
+                  </p>
+                )}
+                {!overlapLoading && overlapError && (
+                  <p className={`${styles.helperText} ${styles.groupMatchReason}`}>
+                    {overlapError}
+                  </p>
+                )}
               </div>
             </div>
           </div>
