@@ -119,10 +119,10 @@ export default function GroupOverview() {
             setOverlapLoading(true);
           }
 
-          const overlapData = await api.get<{ overlap: number }>(`/groups/${groupId}/overlap`);
+          const overlapData = await api.get<{ Overlap: number }>(`/groups/${groupId}/overlap`);
 
           if (isMounted) {
-            setOverlap(overlapData.overlap);
+            setOverlap(overlapData.Overlap);
             setOverlapError(null);
           }
         } catch (err: unknown) {
