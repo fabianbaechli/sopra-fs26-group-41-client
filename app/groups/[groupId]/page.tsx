@@ -43,6 +43,9 @@ export default function GroupOverview() {
   const [isStartPollDialogOpen, setIsStartPollDialogOpen] = useState<boolean>(false);
 
   const pollErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadDoneRef = useRef(false);
+
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const pfpHints = ["You seem bored...", "Still watching?", "Up for something fun?"];
   const [pfpHint, setPfpHint] = useState(pfpHints[0]);
@@ -54,7 +57,7 @@ export default function GroupOverview() {
 
     const fetchGroupDetails = async () => {
       try {
-        setLoading(true);
+        if (!initialLoadDoneRef.current) setLoading(true);
         setRecommendationsLoading(false);
 
         const api = new ApiService();
@@ -66,6 +69,7 @@ export default function GroupOverview() {
           setLoading(false);
           setRecommendationsLoading(true);
           setOverlapLoading(true);
+          initialLoadDoneRef.current = true;
         }
         try {
           const meData = await api.get<unknown>(`/users/me`);
@@ -118,13 +122,21 @@ export default function GroupOverview() {
         try {
           if (isMounted) {
             setOverlapLoading(true);
+            setOverlap(null);
+            setOverlapError(null);
           }
 
-          const overlapData = await api.get<{ Overlap: number }>(`/groups/${groupId}/overlap`);
+          if (data.members.length < 2) {
+            if (isMounted) {
+              setOverlapError("At least 2 members are needed to compute group match.");
+            }
+          } else {
+            const overlapData = await api.get<{ Overlap: number }>(`/groups/${groupId}/overlap`);
 
-          if (isMounted) {
-            setOverlap(overlapData.Overlap);
-            setOverlapError(null);
+            if (isMounted) {
+              setOverlap(overlapData.Overlap ?? null);
+              setOverlapError(null);
+            }
           }
         } catch (err: unknown) {
           if (isMounted) {
@@ -211,7 +223,17 @@ export default function GroupOverview() {
       isMounted = false;
       if (pollErrorTimerRef.current) clearTimeout(pollErrorTimerRef.current);
     };
-  }, [groupId, router]);
+  }, [groupId, router, refreshKey]);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        setRefreshKey((k) => k + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
 
   const joinToken = group?.joinUrl
     ? group.joinUrl.split("/").filter(Boolean).pop() ?? ""
